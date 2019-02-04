@@ -34,7 +34,7 @@ def importDataset(path_to_dataset):
 def preprocess(words):
     new_words = []
     for word in words:
-        print(word + '\n')
+        
         # Remove from array punctuation words
         temp = re.sub(r'[^\w\s]', '', word)
         if temp == '':
