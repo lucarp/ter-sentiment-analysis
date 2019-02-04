@@ -6,21 +6,20 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 def file_to_data(file_name):
 	fichier = open(file_name)
 	content = fichier.read()
-	fichier.close()			
+	fichier.close()
 	content = content.split("\n")
 	content.remove('') # Remove last line (empty)
-	content = [i.split("\t") for i in content]
-	author, rating, docs = zip(*content)
-	meta_data = [list(i) for i in zip(*[author,rating])]
+	content = [i.split(",") for i in content]
+	_, author, doc_id, rating, docs = zip(*content)
+	meta_data = [list(i) for i in zip(*[rating,author,doc_id])]
 	return docs, meta_data
 	
 # Returns dataFrame from docs and meta_data
 def data_to_dataFrame(docs, meta_data, vectorizer):
 	X = vectorizer.fit_transform(docs) # non sparse data
 	df = pd.DataFrame(X.toarray(), columns=vectorizer.get_feature_names())
-	df_meta = pd.DataFrame(meta_data, columns=['AUTHOR', 'RATING'])
+	df_meta = pd.DataFrame(meta_data, columns=['RATING', 'AUTHOR', 'DOC_ID'])
 	df = pd.concat([df, df_meta], axis=1)
-	print(df)	
 	return df, X
 
 # Whole pipeline text to dataFrame
@@ -47,6 +46,9 @@ def file_to_tfidf_l2(file_name):
 	df, X = file_to_dataFrame(file_name, vectorizer)
 	return df, X	
 	
-"""file_to_bow(sys.argv[1])
-file_to_tfidf(sys.argv[1])
-file_to_tfidf_l2(sys.argv[1])"""
+"""df, X = file_to_bow(sys.argv[1])
+print(df.sum(1))
+df, X = file_to_tfidf(sys.argv[1])
+df, X = file_to_tfidf_l2(sys.argv[1])
+print(df)
+df.to_csv("dataframe_tfidf.csv")"""
