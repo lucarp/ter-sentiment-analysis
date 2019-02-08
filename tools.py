@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Process text file and return docs and meta_data
 def file_to_data(file_name):

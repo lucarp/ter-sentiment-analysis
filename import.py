@@ -5,8 +5,34 @@ import pandas as pd
 import numpy as np
 from nltk.tokenize import word_tokenize 
 from nltk.corpus import stopwords
+from collections import Counter
 # nltk.download('punkt')
 # nltk.download('stopwords')
+
+
+
+def countWordsOnReviews(df):
+    wordCounter = Counter()
+    for review in df['Review']:
+        for word in word_tokenize(review):
+            wordCounter[word] +=1
+    
+    return wordCounter
+
+def cleanseData(df, threshold):
+    counter = countWordsOnReviews(df)
+    vocab = {x : counter[x] for x in counter if counter[x] >= threshold }
+    print('Vocabulary size: ' + str(len(vocab)))
+    f = open( 'vocab.json', 'w' )
+    f.write(repr(vocab))
+    f.close()
+    for review in df['Review']:
+        new_review = []
+        for word in word_tokenize(review):
+            if word in vocab:
+                new_review.append(word)
+        review = ' '.join(new_review)
+    return df
 
 def importDataset(path_to_dataset):
     path_to_reviews = path_to_dataset + '/scale_whole_review'
@@ -19,7 +45,6 @@ def importDataset(path_to_dataset):
         if author.startswith('.'):
             continue
 
-        
         ids = pd.read_csv(path_to_scaledata  + '/' + author + '/id.' + author, header=None)
         ratings = pd.read_csv(path_to_scaledata + '/' + author + '/rating.' + author, header=None)
         reviews = []
@@ -29,7 +54,9 @@ def importDataset(path_to_dataset):
             reviews.append(preprocess(word_tokenize(review_file.read())))
             review_file.close()
         frames.append(pd.DataFrame(data={'ID': ids[0], 'Author': author, 'Rating': ratings[0], 'Review': reviews}))
-    pd.concat(frames).to_csv('output.csv')
+    df = pd.concat(frames)
+    df = cleanseData(df,30)
+    df.to_csv('output.csv')
     
 def preprocess(words):
     new_words = []
@@ -46,8 +73,9 @@ def preprocess(words):
         # Remove line breaks
         temp = temp.replace('\n', ' ').replace('\r', '').replace('\t', ' ')
 
-        #TODO: Should we tokenize numbers? Transform numbers into words? Replace by a single token [*NUMBER*] ?
-
+        # Remove numbers
+        if temp.isdigit():
+            continue
 
         # Remove stop words
         if temp in stopwords.words('english'):
