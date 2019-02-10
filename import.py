@@ -26,7 +26,6 @@ def cleanseData(df, threshold):
     f = open( 'vocab.json', 'w' )
     f.write(repr(vocab))
     f.close()
-    i = 0
     new_df_review = []
     for review in df['Review']:
         new_review = []
