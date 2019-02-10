@@ -26,12 +26,19 @@ def cleanseData(df, threshold):
     f = open( 'vocab.json', 'w' )
     f.write(repr(vocab))
     f.close()
+    i = 0
+    new_df_review = []
     for review in df['Review']:
         new_review = []
         for word in word_tokenize(review):
             if word in vocab:
                 new_review.append(word)
         review = ' '.join(new_review)
+        new_df_review.append(review)
+    new_df_review = pd.DataFrame(new_df_review, columns=['Review'])
+    df.drop(['Review'], 1, inplace=True)
+    df.reset_index(inplace=True, drop=True)   
+    df = pd.concat([df, new_df_review], axis=1)
     return df
 
 def importDataset(path_to_dataset):
@@ -84,7 +91,5 @@ def preprocess(words):
         new_words.append(temp)
         # Retunr a single string with preprocessed text
     return ' '.join(str(x) for x in new_words)
-
-
 
 importDataset('dataset')

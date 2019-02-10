@@ -47,9 +47,9 @@ def file_to_tfidf_l2(file_name):
 	df, X = file_to_dataFrame(file_name, vectorizer)
 	return df, X	
 	
-"""df, X = file_to_bow(sys.argv[1])
-print(df.sum(1))
-df, X = file_to_tfidf(sys.argv[1])
-df, X = file_to_tfidf_l2(sys.argv[1])
+df, X = file_to_bow(sys.argv[1])
+#df, X = file_to_tfidf(sys.argv[1])
+#df, X = file_to_tfidf_l2(sys.argv[1])
 print(df)
-df.to_csv("dataframe_tfidf.csv")"""
+input()
+df.to_csv("dataframe.csv")
