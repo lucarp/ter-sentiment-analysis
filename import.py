@@ -5,6 +5,9 @@ import pandas as pd
 import numpy as np
 from nltk.tokenize import word_tokenize 
 from nltk.corpus import stopwords
+from nltk.corpus import wordnet
+from nltk.stem import WordNetLemmatizer 
+from nltk import pos_tag
 from collections import Counter
 # nltk.download('punkt')
 # nltk.download('stopwords')
@@ -63,9 +66,19 @@ def importDataset(path_to_dataset):
     df = pd.concat(frames)
     df = cleanseData(df,30)
     df.to_csv('output.csv')
+
+# Return correct pos for lemmatization
+def get_wordnet_pos(word):
+    tag = pos_tag([word])[0][1][0].upper()
+    tag_dict = {"J": wordnet.ADJ,
+                "N": wordnet.NOUN,
+                "V": wordnet.VERB,
+                "R": wordnet.ADV}
+    return tag_dict.get(tag, wordnet.NOUN)
     
 def preprocess(words):
     new_words = []
+    lemmatizer = WordNetLemmatizer()   
     for word in words:
         
         # Remove from array punctuation words
@@ -74,7 +87,7 @@ def preprocess(words):
             continue
 
         # To lowercase
-        temp = word.lower()
+        temp = temp.lower()
 
         # Remove line breaks
         temp = temp.replace('\n', ' ').replace('\r', '').replace('\t', ' ')
@@ -86,9 +99,12 @@ def preprocess(words):
         # Remove stop words
         if temp in stopwords.words('english'):
             continue
+            
+        # Lemmatization
+        #temp = lemmatizer.lemmatize(temp, get_wordnet_pos(temp)) # complete lemmatization but slow
 
         new_words.append(temp)
-        # Retunr a single string with preprocessed text
+        # Return a single string with preprocessed text
     return ' '.join(str(x) for x in new_words)
 
 importDataset('dataset')
