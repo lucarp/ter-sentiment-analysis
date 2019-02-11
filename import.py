@@ -1,5 +1,6 @@
 import os
 import re
+from io import StringIO
 from numpy import genfromtxt
 import pandas as pd
 import numpy as np
@@ -22,11 +23,11 @@ def countWordsOnReviews(df):
     
     return wordCounter
 
-def cleanseData(df, threshold):
+def cleanseData(df, threshold, vocab_file):
     counter = countWordsOnReviews(df)
     vocab = {x : counter[x] for x in counter if counter[x] >= threshold }
     print('Vocabulary size: ' + str(len(vocab)))
-    f = open( 'vocab.json', 'w' )
+    f = open(vocab_file, 'w' )
     f.write(repr(vocab))
     f.close()
     new_df_review = []
@@ -64,8 +65,36 @@ def importDataset(path_to_dataset):
             review_file.close()
         frames.append(pd.DataFrame(data={'ID': ids[0], 'Author': author, 'Rating': ratings[0], 'Review': reviews}))
     df = pd.concat(frames)
-    df = cleanseData(df,30)
+    df = cleanseData(df, 30, 'vocab.json')
     df.to_csv('output.csv')
+
+def importPreProcessedDataset(path_to_dataset):
+    path_to_scaledata = path_to_dataset + '/scaledata'
+    authors = os.listdir(path_to_scaledata)
+
+    frames = []    
+    for author in authors:
+        # Skip hidden files
+        if author.startswith('.'):
+            continue
+            
+        ids = pd.read_csv(path_to_scaledata  + '/' + author + '/id.' + author, header=None)
+        ratings = pd.read_csv(path_to_scaledata + '/' + author + '/rating.' + author, header=None)    
+        f = open(path_to_scaledata + '/' + author + '/subj.' + author)
+        reviews_file = f.read()
+        f.close()
+        reviews_file = reviews_file.split('\n')
+        reviews_file.remove('') # Remove last line (empty)        
+        reviews = []
+        i = 0
+        for review in reviews_file:
+            print('Extracting review ' + str(ids[0][i]) + ' by ' + author)
+            i += 1
+            reviews.append(preprocess(word_tokenize(review)))
+        frames.append(pd.DataFrame(data={'ID': ids[0], 'Author': author, 'Rating': ratings[0], 'Review': reviews}))
+    df = pd.concat(frames)
+    df = cleanseData(df, 30, 'vocab_not_original.json')
+    df.to_csv('output_not_original.csv')
 
 # Return correct pos for lemmatization
 def get_wordnet_pos(word):
@@ -102,9 +131,11 @@ def preprocess(words):
             
         # Lemmatization
         #temp = lemmatizer.lemmatize(temp, get_wordnet_pos(temp)) # complete lemmatization but slow
+        temp = lemmatizer.lemmatize(temp) # fast lemmatization but not perfect
 
         new_words.append(temp)
         # Return a single string with preprocessed text
     return ' '.join(str(x) for x in new_words)
 
 importDataset('dataset')
+#importPreProcessedDataset('dataset')

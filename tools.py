@@ -48,10 +48,14 @@ def file_to_tfidf_l2(file_name):
 	df, X = file_to_dataFrame(file_name, vectorizer)
 	return df, X	
 	
+print("save bow...")
 df, X = file_to_bow(sys.argv[1])
-scipy.io.savemat("data_bow.mat", {'X' : X})
+scipy.io.savemat(sys.argv[1]+"_bow.mat", {'X' : X})
+print("save tf-idf...")
 df, X = file_to_tfidf(sys.argv[1])
-scipy.io.savemat("data_tf-idf.mat", {'X' : X})
+scipy.io.savemat(sys.argv[1]+"_tf-idf.mat", {'X' : X})
+print("save tf-idf with l2...")
 df, X = file_to_tfidf_l2(sys.argv[1])
-scipy.io.savemat("data_tf-idf-l2.mat", {'X' : X})
+scipy.io.savemat(sys.argv[1]+"_tf-idf-l2.mat", {'X' : X})
+
 #df.to_csv("dataframe.csv")
