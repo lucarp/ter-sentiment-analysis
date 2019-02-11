@@ -1,5 +1,6 @@
 import sys
 import pandas as pd
+import scipy
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -37,19 +38,20 @@ def file_to_bow(file_name):
 	
 # Return tf-idf bag of words
 def file_to_tfidf(file_name):
-	vectorizer = TfidfVectorizer(norm=None)
+	vectorizer = TfidfVectorizer(norm=None, sublinear_tf=True)
 	df, X = file_to_dataFrame(file_name, vectorizer)
 	return df, X	
 	
 # Return tf-idf with l2 norm bag of words	
 def file_to_tfidf_l2(file_name):
-	vectorizer = TfidfVectorizer(norm='l2')
+	vectorizer = TfidfVectorizer(norm='l2', sublinear_tf=True)
 	df, X = file_to_dataFrame(file_name, vectorizer)
 	return df, X	
 	
 df, X = file_to_bow(sys.argv[1])
-#df, X = file_to_tfidf(sys.argv[1])
-#df, X = file_to_tfidf_l2(sys.argv[1])
-print(df)
-input()
-df.to_csv("dataframe.csv")
+scipy.io.savemat("data_bow.mat", {'X' : X})
+df, X = file_to_tfidf(sys.argv[1])
+scipy.io.savemat("data_tf-idf.mat", {'X' : X})
+df, X = file_to_tfidf_l2(sys.argv[1])
+scipy.io.savemat("data_tf-idf-l2.mat", {'X' : X})
+#df.to_csv("dataframe.csv")
