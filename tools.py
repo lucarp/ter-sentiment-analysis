@@ -11,6 +11,7 @@ def file_to_data(file_name):
 	fichier.close()
 	content = content.split("\n")
 	content.remove('') # Remove last line (empty)
+	content = content[1:] # Remove header
 	content = [i.split(",") for i in content]
 	_, author, doc_id, rating, docs = zip(*content)
 	meta_data = [list(i) for i in zip(*[rating,author,doc_id])]
@@ -58,4 +59,4 @@ print("save tf-idf with l2...")
 df, X = file_to_tfidf_l2(sys.argv[1])
 scipy.io.savemat(sys.argv[1]+"_tf-idf-l2.mat", {'X' : X})
 
-#df.to_csv("dataframe.csv")
+df['RATING'].to_csv("dataset_LABEL.csv", index=False, header=False)
