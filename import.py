@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from io import StringIO
 from numpy import genfromtxt
 import pandas as pd
@@ -44,7 +45,12 @@ def cleanseData(df, threshold, vocab_file):
     df = pd.concat([df, new_df_review], axis=1)
     return df
 
-def importDataset(path_to_dataset):
+def cleanAndSaveData(fileNameIn, fileNameOut, threshold, vocab_file):
+    df = pd.read_csv(fileNameIn, header=0, index_col=0)
+    df = cleanseData(df, threshold, vocab_file)
+    df.to_csv(fileNameOut)
+
+def importDataset(path_to_dataset, clean_threshold):
     path_to_reviews = path_to_dataset + '/scale_whole_review'
     path_to_scaledata = path_to_dataset + '/scaledata'
     authors = os.listdir(path_to_scaledata)
@@ -65,14 +71,15 @@ def importDataset(path_to_dataset):
             review_file.close()
         frames.append(pd.DataFrame(data={'ID': ids[0], 'Author': author, 'Rating': ratings[0], 'Review': reviews}))
     df = pd.concat(frames)
-    df = cleanseData(df, 30, 'vocab.json')
+    df.to_csv('output_without_clean.csv')
+    df = cleanseData(df, clean_threshold, 'vocab.json')
     df.to_csv('output.csv')
 
-def importPreProcessedDataset(path_to_dataset):
+def importPreProcessedDataset(path_to_dataset, clean_threshold):
     path_to_scaledata = path_to_dataset + '/scaledata'
     authors = os.listdir(path_to_scaledata)
 
-    frames = []    
+    frames = []
     for author in authors:
         # Skip hidden files
         if author.startswith('.'):
@@ -93,7 +100,8 @@ def importPreProcessedDataset(path_to_dataset):
             reviews.append(preprocess(word_tokenize(review)))
         frames.append(pd.DataFrame(data={'ID': ids[0], 'Author': author, 'Rating': ratings[0], 'Review': reviews}))
     df = pd.concat(frames)
-    df = cleanseData(df, 30, 'vocab_not_original.json')
+    df.to_csv('output_not_original_without_clean.csv')    
+    df = cleanseData(df, clean_threshold, 'vocab_not_original.json')
     df.to_csv('output_not_original.csv')
 
 # Return correct pos for lemmatization
@@ -137,5 +145,9 @@ def preprocess(words):
         # Return a single string with preprocessed text
     return ' '.join(str(x) for x in new_words)
 
-importDataset('dataset')
-#importPreProcessedDataset('dataset')
+cleanAndSaveData(sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4])
+
+"""print("--- Original Dataset")
+importDataset('dataset', 30)
+print("--- PreProcessed Dataset")
+importPreProcessedDataset('dataset', 30)"""

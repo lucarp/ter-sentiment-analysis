@@ -59,4 +59,4 @@ print("save tf-idf with l2...")
 df, X = file_to_tfidf_l2(sys.argv[1])
 scipy.io.savemat(sys.argv[1]+"_tf-idf-l2.mat", {'X' : X})
 
-df['RATING'].to_csv("dataset_LABEL.csv", index=False, header=False)
+#df['RATING'].to_csv("dataset_LABEL.csv", index=False, header=False)

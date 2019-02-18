@@ -1,14 +1,27 @@
 setwd("/media/matthieu/Data/Matthieu/##Etude/#M1/S2/TER/ter-sentiment-analysis")
 
 library(R.matlab)
-#X <- readMat("mat_files/output.csv_tf-idf-l2.mat")
-#X <- readMat("mat_files/output_not_original.csv_bow.mat")
-#X <- readMat("mat_files/output_not_original.csv_tf-idf.mat")
-X <- readMat("mat_files/output_not_original.csv_tf-idf-l2.mat")
+#X <- readMat("mat_files/output_30.csv_tf-idf-l2.mat")
+#X <- readMat("mat_files/output_not_original_30.csv_bow.mat")
+#X <- readMat("mat_files/output_not_original_30.csv_tf-idf.mat")
+X <- readMat("mat_files/output_not_original_30.csv_tf-idf-l2.mat")
+X <- readMat("mat_files/output_not_original_50.csv_tf-idf-l2.mat")
+X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
 df <- X$X
 df
 label <- read.csv("mat_files/dataset_LABEL.csv", header = FALSE)
 label
+
+# --- Split, if wanted, per autor ---
+label <- matrix(label[1:1027,])
+df <- df[1:1027,]
+label <- matrix(label[1028:2334,])
+df <- df[1028:2334,]
+label <- matrix(label[2335:3236,])
+df <- df[2335:3236,]
+#label <- matrix(label[3237:,])
+#df <- df[3237:,]
+# -----------------------------------
 
 # --- K-means ---
 # - Elbow criteron
@@ -37,16 +50,6 @@ plot(rng, avg.rsquared, type="b", main="R squared by Various K",
      xlab="Value of K")
 
 
-# --- Split, if wanted, per autor ---
-label <- matrix(label[1:1027,])
-df <- df[1:1027,]
-label <- matrix(label[1028:2334,])
-df <- df[1028:2334,]
-label <- matrix(label[2335:3236,])
-df <- df[2335:3236,]
-label <- matrix(label[3237:,])
-df <- df[3237:,]
-
 k <- 5
 res <- kmeans(df, centers = k)
 labelK <- apply(label, MARGIN = 1, FUN=function(x) max(1, ceiling(x*k)))
@@ -66,6 +69,8 @@ plot(res$cluster)
 library(skmeans)
 res2 <- skmeans(df, k)
 res2$cluster
+
+layout(matrix(1:2))
 plot(labelK)
 plot(res2$cluster)
 
