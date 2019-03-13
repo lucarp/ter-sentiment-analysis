@@ -24,25 +24,34 @@ np.savetxt("singular_values.csv",sv, delimiter=",")
 
 # AUTOENCODER
 
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Input
 from sklearn.model_selection import train_test_split
+from tensorflow.keras import regularizers
 
 np.random.shuffle(X)
 
 x_train = X[:4000]
 x_test = X[4000:]
 
-model = Sequential()
-model.add(Dense(units=3000, activation='relu', input_dim=4431))
-model.add(Dense(units=2000, activation='relu'))
-model.add(Dense(units=1500, activation='linear', name='bottleneck'))
-model.add(Dense(units=2000, activation='relu'))
-model.add(Dense(units=3000, activation='relu'))
-model.add(Dense(units=4431, activation='linear'))
+encoding_dim = 2000
 
-model.compile(loss='categorical_crossentropy',
-              optimizer='sgd',
-              metrics=['accuracy'])
+input_x = Input(shape=(4431,))
 
-model.fit(x_train, x_train, epochs=300, batch_size=16)
+encoded = Dense(encoding_dim, activation='relu', activity_regularizer=regularizers.l1(10e-5))(input_x)
+decoded = Dense(4431, activation="sigmoid")(encoded)
+
+autoencoder = Model(input_x, decoded)
+
+encoder = Model(input_x, encoded)
+
+encoded_input = Input(shape=(encoding_dim,))
+decoder_layer = autoencoder.layers[-1]
+decoder = Model(encoded_input, decoder_layer(encoded_input))
+
+autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+
+
+autoencoder.fit(x_train, x_train, epochs=500, batch_size=32, shuffle=True, validation_data=(x_test,x_test))
+
+
