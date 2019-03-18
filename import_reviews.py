@@ -145,7 +145,6 @@ def preprocess(words):
         # Return a single string with preprocessed text
     return ' '.join(str(x) for x in new_words)
 
-cleanAndSaveData(sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4])
 
 """print("--- Original Dataset")
 importDataset('dataset', 30)
