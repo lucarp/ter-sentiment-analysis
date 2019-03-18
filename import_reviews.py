@@ -43,7 +43,7 @@ def cleanseData(df, threshold, vocab_file):
     df.drop(['Review'], 1, inplace=True)
     df.reset_index(inplace=True, drop=True)   
     df = pd.concat([df, new_df_review], axis=1)
-    return df
+    return df,vocab
 
 def cleanAndSaveData(fileNameIn, fileNameOut, threshold, vocab_file):
     df = pd.read_csv(fileNameIn, header=0, index_col=0)
@@ -65,15 +65,16 @@ def importDataset(path_to_dataset, clean_threshold):
         ratings = pd.read_csv(path_to_scaledata + '/' + author + '/rating.' + author, header=None)
         reviews = []
         for reviewId in ids[0]:
-            print('Extracting review ' + str(reviewId) + ' by ' + author)
+            #print('Extracting review ' + str(reviewId) + ' by ' + author)
             review_file = open(path_to_reviews  + '/' + author + '/txt.parag/' + str(reviewId) + '.txt', encoding='latin-1')
             reviews.append(preprocess(word_tokenize(review_file.read())))
             review_file.close()
         frames.append(pd.DataFrame(data={'ID': ids[0], 'Author': author, 'Rating': ratings[0], 'Review': reviews}))
     df = pd.concat(frames)
     df.to_csv('output_without_clean.csv')
-    df = cleanseData(df, clean_threshold, 'vocab.json')
+    df, vocab = cleanseData(df, clean_threshold, 'vocab.json')
     df.to_csv('output.csv')
+    return df,vocab
 
 def importPreProcessedDataset(path_to_dataset, clean_threshold):
     path_to_scaledata = path_to_dataset + '/scaledata'
