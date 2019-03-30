@@ -1,0 +1,7 @@
+- K-means:
+NMI = 0.0200515
+ARI = 0.003853249
+
+- Spherical K-means:
+NMI = 0.02584375
+ARI = 0.01972879
