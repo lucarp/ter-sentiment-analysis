@@ -59,8 +59,6 @@ def vocab_to_term_sentiment_matrix(vocab_file, sentiment_file):
 	doc_term_sentiment_matrix = []
 	# Iterate through the vocab of all the documents
 	for i, word in vocab_df.iterrows():
-		if i > 2:
-			break
 		word = word[0]
 		print(i, word)
 		pos = 0
