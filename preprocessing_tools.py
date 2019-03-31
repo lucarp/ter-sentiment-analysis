@@ -1,6 +1,8 @@
 import sys
 import pandas as pd
+import numpy as np
 import scipy
+import re
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -49,5 +51,21 @@ def file_to_tfidf_l2(file_name):
 	df, X = file_to_dataFrame(file_name, vectorizer)
 	return df, X	
 	
+def vocab_to_term_sentiment_matrix(vocab_file, sentiment_file):
+	vocab_df = pd.read_csv(vocab_file, header=None)
+	num_words = vocab_df.shape[0]
+	sentiment_df = pd.read_csv(sentiment_file, index_col=0)
+	# Iterate through the vocab of all the documents
+	for _, word in vocab_df.iterrows():
+		word = word[0]
+		# Iterate through all sentiment words in the dictionnary
+		for _, sent_word in sentiment_df.iterrows():
+			sent_word = re.sub("#.*", "", sent_word[0])
 
 #df['RATING'].to_csv("dataset_LABEL.csv", index=False, header=False)
+
+vocab_to_term_sentiment_matrix(sys.argv[1], sys.argv[2])
+# output to vocab file
+"""df, X = file_to_tfidf_l2(sys.argv[1])
+columns = df.columns.values[:-3] # to remove RATING, AUTHOR and DOC_ID columns
+pd.DataFrame(columns).to_csv(sys.argv[1][:-4]+"_vocab.csv", index=False, header=False)"""
