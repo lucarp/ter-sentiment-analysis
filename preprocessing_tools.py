@@ -55,12 +55,34 @@ def vocab_to_term_sentiment_matrix(vocab_file, sentiment_file):
 	vocab_df = pd.read_csv(vocab_file, header=None)
 	num_words = vocab_df.shape[0]
 	sentiment_df = pd.read_csv(sentiment_file, index_col=0)
+	num_found = 0
+	doc_term_sentiment_matrix = []
 	# Iterate through the vocab of all the documents
-	for _, word in vocab_df.iterrows():
+	for i, word in vocab_df.iterrows():
+		if i > 2:
+			break
 		word = word[0]
+		print(i, word)
+		pos = 0
+		neg = 0
+		found = False
 		# Iterate through all sentiment words in the dictionnary
-		for _, sent_word in sentiment_df.iterrows():
-			sent_word = re.sub("#.*", "", sent_word[0])
+		for j, sent_vec in sentiment_df.iterrows():
+			sent_word = re.sub("#.*", "", sent_vec[0])
+			if word == sent_word:
+				pos = max(pos, float(sent_vec[1]))
+				neg = max(neg, float(sent_vec[2]))
+				if not found:
+					num_found += 1
+					found = True
+		neu = 1 if pos == 0 and neg == 0 else 0
+		word_vec = [word, pos, neg, neu]
+		print(word_vec)
+		print(found)
+		doc_term_sentiment_matrix.append(word_vec)
+		
+	doc_term_sentiment_matrix.append([num_found])
+	pd.DataFrame(doc_term_sentiment_matrix).to_csv('doc_term_sentiment_matrix.csv')
 
 #df['RATING'].to_csv("dataset_LABEL.csv", index=False, header=False)
 
