@@ -50,30 +50,44 @@ def file_to_tfidf_l2(file_name):
 	vectorizer = TfidfVectorizer(norm='l2', sublinear_tf=True)
 	df, X = file_to_dataFrame(file_name, vectorizer)
 	return df, X	
-	
+
 def vocab_to_term_sentiment_matrix(vocab_file, sentiment_file):
 	vocab_df = pd.read_csv(vocab_file, header=None)
-	num_words = vocab_df.shape[0]
 	sentiment_df = pd.read_csv(sentiment_file, index_col=0)
 	num_found = 0
 	doc_term_sentiment_matrix = []
+	
+	dict_term_sentiment_matrix = {}
+
+	# Iterate through all sentiment words in the dictionnary	
+	for j, sent_vec in sentiment_df.iterrows():
+		sent_word = re.sub("#.*", "", sent_vec[0])
+		pos = float(sent_vec[1])
+		neg = float(sent_vec[2])
+		
+		if sent_word in dict_term_sentiment_matrix:
+			pos = max(pos, dict_term_sentiment_matrix[sent_word][0])
+			neg = max(neg, dict_term_sentiment_matrix[sent_word][1])
+		
+		neu = 1 if pos == 0 and neg == 0 else 0
+
+		dict_term_sentiment_matrix[sent_word] = (pos, neg, neu)
+	
 	# Iterate through the vocab of all the documents
 	for i, word in vocab_df.iterrows():
 		word = word[0]
 		print(i, word)
-		pos = 0
-		neg = 0
-		found = False
-		# Iterate through all sentiment words in the dictionnary
-		for j, sent_vec in sentiment_df.iterrows():
-			sent_word = re.sub("#.*", "", sent_vec[0])
-			if word == sent_word:
-				pos = max(pos, float(sent_vec[1]))
-				neg = max(neg, float(sent_vec[2]))
-				if not found:
-					num_found += 1
-					found = True
-		neu = 1 if pos == 0 and neg == 0 else 0
+		found = word in dict_term_sentiment_matrix
+		if found:
+			pos = dict_term_sentiment_matrix[word][0]
+			neg = dict_term_sentiment_matrix[word][1]
+			neu = dict_term_sentiment_matrix[word][2]
+			num_found += 1
+		else:
+			pos = 0.
+			neg = 0.
+			neu = 1.
+
 		word_vec = [word, pos, neg, neu]
 		print(word_vec)
 		print(found)
