@@ -96,10 +96,59 @@ def vocab_to_term_sentiment_matrix(vocab_file, sentiment_file):
 	doc_term_sentiment_matrix.append([num_found])
 	pd.DataFrame(doc_term_sentiment_matrix).to_csv('doc_term_sentiment_matrix.csv')
 
-#df['RATING'].to_csv("dataset_LABEL.csv", index=False, header=False)
+def term_sentiment_matrix_to_dataframe(term_sentiment_file):
+	term_sentiment_df = pd.read_csv(term_sentiment_file, index_col=0)
+	term_sentiment_df = term_sentiment_df.drop('0', 1)
+	term_sentiment_df.drop(term_sentiment_df.tail(1).index,inplace=True)
+	return term_sentiment_df	
 
-vocab_to_term_sentiment_matrix(sys.argv[1], sys.argv[2])
-# output to vocab file
-"""df, X = file_to_tfidf_l2(sys.argv[1])
-columns = df.columns.values[:-3] # to remove RATING, AUTHOR and DOC_ID columns
-pd.DataFrame(columns).to_csv(sys.argv[1][:-4]+"_vocab.csv", index=False, header=False)"""
+def preprocess_term_sentiment_matrix(term_sentiment_df):
+	new_df = pd.DataFrame()
+	for _, sent_vec in term_sentiment_df.iterrows():	
+		pos = 1 if sent_vec[0] > sent_vec[1] else 0
+		neg = 1 if sent_vec[1] > sent_vec[0] else 0
+		neu = 1 if sent_vec[0] == sent_vec[1] else 0
+		temp_vec = [[pos, neg, neu]]
+		new_df = new_df.append(temp_vec)
+	return new_df
+	
+def term_sentiment_matrix_to_context_matrix(term_sentiment_file, preprocess=False, method='tra'):
+	term_sentiment_df = term_sentiment_matrix_to_dataframe(term_sentiment_file)
+	num_words = term_sentiment_df.shape[0]
+	
+	if preprocess:
+		term_sentiment_df = preprocess_term_sentiment_matrix(term_sentiment_df)
+		
+	if method == 'tra':
+		# Transpose method
+		context_matrix = np.dot(term_sentiment_df, np.transpose(term_sentiment_df))
+	elif method == 'cos':
+		# Cosinus distance method
+		pass
+	
+	return context_matrix
+
+if __name__ == '__main__':
+	#df['RATING'].to_csv("dataset_LABEL.csv", index=False, header=False)
+	# output to dataset
+	"""print("save bow...")
+	df, X = file_to_bow(sys.argv[1])
+	scipy.io.savemat(sys.argv[1]+"_bow.mat", {'X' : X})
+	print("save tf-idf...")
+	df, X = file_to_tfidf(sys.argv[1])
+	scipy.io.savemat(sys.argv[1]+"_tf-idf.mat", {'X' : X})
+	print("save tf-idf with l2...")
+	df, X = file_to_tfidf_l2(sys.argv[1])
+	scipy.io.savemat(sys.argv[1]+"_tf-idf-l2.mat", {'X' : X})"""
+
+	# output to vocab file
+	"""df, X = file_to_tfidf_l2(sys.argv[1])
+	columns = df.columns.values[:-3] # to remove RATING, AUTHOR and DOC_ID columns
+	pd.DataFrame(columns).to_csv(sys.argv[1][:-4]+"_vocab.csv", index=False, header=False)"""
+
+	# vocab file to term/sentiment matrix
+	"""vocab_to_term_sentiment_matrix(sys.argv[1], sys.argv[2])"""
+
+	# term/sentiment matrix to context matrix
+	context_matrix_tra = term_sentiment_matrix_to_context_matrix(sys.argv[1])
+	#context_matrix_cos = term_sentiment_matrix_to_context_matrix(sys.argv[1], method='cos')

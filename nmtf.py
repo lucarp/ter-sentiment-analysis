@@ -1,4 +1,7 @@
 import numpy as np
+import sys
+from scipy import io
+from preprocessing_tools import term_sentiment_matrix_to_context_matrix
 
 def compute_loss(X, M, Z, S, W, Q, l_reg):
 	ZSW_T = np.dot(np.dot(Z, S), np.transpose(W))
@@ -58,8 +61,11 @@ def wc_nmtf(X, M, g = 5, m = 5, l_reg = 1):
 	return {"Z": Z, "S": S, "W": W, "Q": Q}
 	
 if __name__ == '__main__':
-	n = 10
+	"""n = 10
 	d = 5
 	X = np.random.rand(n, d)
-	M = np.random.rand(d, d)	
+	M = np.random.rand(d, d)"""
+	mat = io.loadmat(sys.argv[1])
+	X = mat['X']
+	M = term_sentiment_matrix_to_context_matrix(sys.argv[2])
 	wc_nmtf(X, M)
