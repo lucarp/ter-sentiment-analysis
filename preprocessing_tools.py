@@ -106,7 +106,7 @@ def preprocess_term_sentiment_matrix(term_sentiment_df):
 	new_df = pd.DataFrame()
 	for _, sent_vec in term_sentiment_df.iterrows():	
 		pos = 1 if sent_vec[0] > sent_vec[1] else 0
-		neg = 1 if sent_vec[1] > sent_vec[0] else 0
+		neg = 1 if sent_vec[0] < sent_vec[1] else 0
 		neu = 1 if sent_vec[0] == sent_vec[1] else 0
 		temp_vec = [[pos, neg, neu]]
 		new_df = new_df.append(temp_vec)
