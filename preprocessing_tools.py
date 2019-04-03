@@ -123,8 +123,7 @@ def term_sentiment_matrix_to_context_matrix(term_sentiment_file, preprocess=Fals
 		# Transpose method
 		context_matrix = np.dot(term_sentiment_df, np.transpose(term_sentiment_df))
 	elif method == 'cos':
-		# Cosinus distance method
-		pass
+		context_matrix = cosine_similarity(term_sentiment_df)
 	
 	return context_matrix
 
@@ -151,4 +150,4 @@ if __name__ == '__main__':
 
 	# term/sentiment matrix to context matrix
 	context_matrix_tra = term_sentiment_matrix_to_context_matrix(sys.argv[1])
-	#context_matrix_cos = term_sentiment_matrix_to_context_matrix(sys.argv[1], method='cos')
+	context_matrix_cos = term_sentiment_matrix_to_context_matrix(sys.argv[1], method='cos')

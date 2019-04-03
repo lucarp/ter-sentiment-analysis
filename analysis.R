@@ -127,8 +127,13 @@ res_nmf <- nmf(mat_df, 4000)
 
 
 # ------- WC-NMTF -------
-res_wc_nmtf <- read.csv("wc-nmtf_Z.csv", header = TRUE)
+res_wc_nmtf <- read.csv("wc-nmtf_Z_l1_p.csv", header = TRUE)
 label_res <- apply(res_wc_nmtf, MARGIN = 1, FUN=which.max)
+
+layout(matrix(1:2))
+plot(labelK)
+plot(label_res)
+
 NMI(label_res, labelK)
 ARI(label_res, labelK)
 
