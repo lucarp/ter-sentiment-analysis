@@ -2,6 +2,7 @@ import numpy as np
 import sys
 from scipy import io
 import scipy
+import pandas as pd
 from preprocessing_tools import term_sentiment_matrix_to_context_matrix
 
 def compute_loss(X, M, Z, S, W, Q, l_reg):
@@ -10,21 +11,22 @@ def compute_loss(X, M, Z, S, W, Q, l_reg):
 	
 	return 1/2 * np.linalg.norm(X - ZSW_T) ** 2 + l_reg/2 * np.linalg.norm(M - WQ_T) ** 2
 
-def wc_nmtf(X, M, g = 5, m = 5, l_reg = 1):
+def wc_nmtf(X, M, g, m, l_reg = 1):
+	epsilon = 1e-12
+
 	n = X.shape[0]
 	d = X.shape[1]
 	
-	Z = np.random.rand(n, g)
-	S = np.random.rand(g, m)
-	W = np.random.rand(d, m)
-	Q = np.random.rand(d, m)
+	Z = np.random.uniform(low=epsilon, size=(n, g))
+	S = np.random.uniform(low=epsilon, size=(g, m))
+	W = np.random.uniform(low=epsilon, size=(d, m))
+	Q = np.random.uniform(low=epsilon, size=(d, m))
 	
 	X_T = np.transpose(X)
 	M_T = np.transpose(M)
 	
-	epsilon = 1e-12
 	i = 0
-	epoch = 1000
+	epoch = 201
 	stop_criterion = False
 	while not stop_criterion:
 		loss = compute_loss(X, M, Z, S, W, Q, l_reg)
@@ -73,4 +75,12 @@ if __name__ == '__main__':
 	X = scipy.sparse.csr_matrix.todense(mat['X'])
 	M = term_sentiment_matrix_to_context_matrix(sys.argv[2])
 	
-	wc_nmtf(X, M)
+	g = int(sys.argv[3])
+	m = int(sys.argv[4])
+	l_reg = float(sys.argv[5])
+
+	print(X.shape)
+
+	res = wc_nmtf(X, M, g, m, l_reg = l_reg)
+	Z = res["Z"]
+	pd.DataFrame(Z).to_csv('wc-nmtf_Z.csv', index=False)
