@@ -135,7 +135,7 @@ def preprocess(words):
             continue
 
         # Remove stop words
-        if temp in stopwords.words('english'):
+        if temp in (stopwords.words('english') - {'needn\'t', 'but', 'couldn\'t', 'over', 'should', 'don\'t', 'not', 'very', 'mightn', 'should\'ve', 'couldn', 'shouldn\'t', 'wasn', 'wouldn\'t', 'mightn\'t'}):
             continue
             
         # Lemmatization
