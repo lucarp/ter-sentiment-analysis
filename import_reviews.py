@@ -14,7 +14,7 @@ from collections import Counter
 # nltk.download('punkt')
 # nltk.download('stopwords')
 
-
+selected_stopwords = [item for item in stopwords.words('english') if item not in ['needn\'t', 'but', 'couldn\'t', 'over', 'should', 'don\'t', 'not', 'very', 'mightn', 'should\'ve', 'couldn', 'shouldn\'t', 'wasn', 'wouldn\'t', 'mightn\'t']]
 
 def countWordsOnReviews(df):
     wordCounter = Counter()
@@ -47,7 +47,7 @@ def cleanseData(df, threshold, vocab_file):
 
 def cleanAndSaveData(fileNameIn, fileNameOut, threshold, vocab_file):
     df = pd.read_csv(fileNameIn, header=0, index_col=0)
-    df = cleanseData(df, threshold, vocab_file)
+    df,vocab = cleanseData(df, threshold, vocab_file)
     df.to_csv(fileNameOut)
 
 def importDataset(path_to_dataset, clean_threshold):
@@ -101,9 +101,10 @@ def importPreProcessedDataset(path_to_dataset, clean_threshold):
             reviews.append(preprocess(word_tokenize(review)))
         frames.append(pd.DataFrame(data={'ID': ids[0], 'Author': author, 'Rating': ratings[0], 'Review': reviews}))
     df = pd.concat(frames)
-    df.to_csv('output_not_original_without_clean.csv')    
-    df = cleanseData(df, clean_threshold, 'vocab_not_original.json')
+    df.to_csv('output_not_original_without_clean.csv')
+    df, vocab = cleanseData(df, clean_threshold, 'vocab_not_original.json')
     df.to_csv('output_not_original.csv')
+    return df,vocab
 
 # Return correct pos for lemmatization
 def get_wordnet_pos(word):
@@ -135,7 +136,7 @@ def preprocess(words):
             continue
 
         # Remove stop words
-        if temp in (stopwords.words('english') - {'needn\'t', 'but', 'couldn\'t', 'over', 'should', 'don\'t', 'not', 'very', 'mightn', 'should\'ve', 'couldn', 'shouldn\'t', 'wasn', 'wouldn\'t', 'mightn\'t'}):
+        if temp in selected_stopwords:
             continue
             
         # Lemmatization
