@@ -5,6 +5,8 @@ import scipy
 import re
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from nltk import word_tokenize
+from math import log
 
 # Process text file and return docs and meta_data
 def file_to_data(file_name):
@@ -51,6 +53,11 @@ def file_to_tfidf_l2(file_name):
 	df, X = file_to_dataFrame(file_name, vectorizer)
 	return df, X	
 
+
+
+"""
+======= TERM SENTIMENT MATRIX =======
+"""
 def vocab_to_term_sentiment_matrix(vocab_file, sentiment_file):
 	vocab_df = pd.read_csv(vocab_file, header=None)
 	sentiment_df = pd.read_csv(sentiment_file, index_col=0)
@@ -111,7 +118,43 @@ def preprocess_term_sentiment_matrix(term_sentiment_df):
 		temp_vec = [[pos, neg, neu]]
 		new_df = new_df.append(temp_vec)
 	return new_df
+
+
+
+"""
+======= CO-OCCURENCE MATRIX =======
+"""
+def text_to_co_occurence_matrix(texts_file):
+	#texts_df = pd.read_csv(texts_file, header=0)	
+	texts_df = file_to_bow(texts_file)[0]
+	texts_df = texts_df[texts_df.columns[:-3]]
 	
+	texts_df[texts_df > 1] = 1
+	
+	co_occurence_matrix = np.dot(np.transpose(texts_df), texts_df)
+	
+	print(co_occurence_matrix)
+	print(co_occurence_matrix.shape)	
+		
+	return co_occurence_matrix
+	
+def co_occurence_pmi(co_occurence_matrix, i, j, default = 0):
+	cij = co_occurence_matrix[i,j]
+	cid = co_occurence_matrix[i,:].sum()
+	cdj = co_occurence_matrix[:,j].sum()
+	cdd = co_occurence_matrix.sum()
+		
+	try:
+		ret = log( (cij * cdd) / (cid * cdj) )
+	except:
+		ret = default
+	return ret
+
+
+
+"""
+======= CONTEXT MATRIX =======
+"""	
 def term_sentiment_matrix_to_context_matrix(term_sentiment_file, preprocess=False, method='tra'):
 	term_sentiment_df = term_sentiment_matrix_to_dataframe(term_sentiment_file)
 	num_words = term_sentiment_df.shape[0]
@@ -127,6 +170,19 @@ def term_sentiment_matrix_to_context_matrix(term_sentiment_file, preprocess=Fals
 	
 	return context_matrix
 
+def sppmi_context_matrix(co_occurence_matrix, N = 2):
+	sppmi_matrix = np.zeros(co_occurence_matrix.shape)
+	for i in range(co_occurence_matrix.shape[0]):
+		for j in range(co_occurence_matrix.shape[1]):
+			sppmi_matrix[i][j] = max(co_occurence_pmi(co_occurence_matrix, i, j) - log(N), 0)
+			
+	return sppmi_matrix
+
+
+
+"""
+======= MAIN =======
+"""
 if __name__ == '__main__':
 	#df['RATING'].to_csv("dataset_LABEL.csv", index=False, header=False)
 	# output to dataset
@@ -149,5 +205,10 @@ if __name__ == '__main__':
 	"""vocab_to_term_sentiment_matrix(sys.argv[1], sys.argv[2])"""
 
 	# term/sentiment matrix to context matrix
-	context_matrix_tra = term_sentiment_matrix_to_context_matrix(sys.argv[1])
-	context_matrix_cos = term_sentiment_matrix_to_context_matrix(sys.argv[1], method='cos')
+	"""context_matrix_tra = term_sentiment_matrix_to_context_matrix(sys.argv[1])
+	context_matrix_cos = term_sentiment_matrix_to_context_matrix(sys.argv[1], method='cos')"""
+	
+	# text and vocab to co-occurence matrix
+	co_occurence_matrix = text_to_co_occurence_matrix(sys.argv[1])
+	context_matrix = sppmi_context_matrix(co_occurence_matrix)
+	pd.DataFrame(context_matrix).to_csv('context_matrix.csv')

@@ -66,14 +66,14 @@ def wc_nmtf(X, M, g, m, l_reg = 1):
 	return {"Z": Z, "S": S, "W": W, "Q": Q}
 	
 if __name__ == '__main__':
-	"""n = 10
+	n = 10
 	d = 20
 	X = np.random.rand(n, d)
-	M = np.random.rand(d, d)"""
+	M = np.random.rand(d, d)
 	
-	mat = io.loadmat(sys.argv[1])
+	"""mat = io.loadmat(sys.argv[1])
 	X = scipy.sparse.csr_matrix.todense(mat['X'])
-	M = term_sentiment_matrix_to_context_matrix(sys.argv[2])
+	M = term_sentiment_matrix_to_context_matrix(sys.argv[2])"""
 	
 	g = int(sys.argv[3])
 	m = int(sys.argv[4])
@@ -81,6 +81,7 @@ if __name__ == '__main__':
 
 	print(X.shape)
 
-	res = wc_nmtf(X, M, g, m, l_reg = l_reg)
+	res = wc_nmtf(X, M, g, m, l_reg = l_reg)	
+	
 	Z = res["Z"]
 	pd.DataFrame(Z).to_csv('wc-nmtf_Z.csv', index=False)
