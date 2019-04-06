@@ -127,7 +127,7 @@ res_nmf <- nmf(mat_df, 4000)
 
 
 # ------- WC-NMTF -------
-res_wc_nmtf <- read.csv("wc-nmtf_Z_l1_cos.csv", header = TRUE)
+res_wc_nmtf <- read.csv("wc-nmtf_Z_l1_cos_xnorm.csv", header = TRUE)
 label_res <- apply(res_wc_nmtf, MARGIN = 1, FUN=which.max)
 
 layout(matrix(1:2))
