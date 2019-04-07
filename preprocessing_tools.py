@@ -130,6 +130,8 @@ def text_to_co_occurence_matrix(texts_file):
 	texts_df = file_to_bow(texts_file)[0]
 	texts_df = texts_df[texts_df.columns[:-3]]
 	
+	texts_df = scipy.sparse.csr_matrix(texts_df.values)
+	
 	texts_df[texts_df > 1] = 1
 	
 	co_occurence_matrix = np.dot(texts_df.T, texts_df)
@@ -168,26 +170,25 @@ def term_sentiment_matrix_to_context_matrix(term_sentiment_file, preprocess=Fals
 		context_matrix = np.dot(term_sentiment_df, np.transpose(term_sentiment_df))
 	elif method == 'cos':
 		context_matrix = cosine_similarity(term_sentiment_df)
-		context_matrix = normalize(context_matrix)		
+
+	context_matrix = normalize(context_matrix)
 	
 	return context_matrix
 
 def sppmi_context_matrix(co_occurence_matrix, N = 2):
 	sppmi_matrix = np.zeros(co_occurence_matrix.shape)
-	row_mat = np.zeros(co_occurence_matrix.shape[0])
-	col_mat = np.zeros(co_occurence_matrix.shape[1])
-	mat_sum = 0
+	shape = co_occurence_matrix.shape[0]
+	
+	row_mat = co_occurence_matrix.sum(axis = 1)
+	row_mat = np.reshape(row_mat, [shape, 1])
+	col_mat = co_occurence_matrix.sum(axis = 0)
+	col_mat = np.reshape(col_mat, [shape, 1])
+	mat_sum = co_occurence_matrix.sum()		
 
-	for i in range(co_occurence_matrix.shape[0]):
-		row_mat[i] = co_occurence_matrix[i,:].sum()	
-		mat_sum += row_mat[i]
-	for j in range(co_occurence_matrix.shape[1]):	
-		col_mat[j] = co_occurence_matrix[:,j].sum()	
-		
-	for i in range(co_occurence_matrix.shape[0]):
-		for j in range(co_occurence_matrix.shape[1]):
-			pmi = co_occurence_pmi(co_occurence_matrix, i, j, row_mat, col_mat, mat_sum)
-			sppmi_matrix[i][j] = max(pmi - log(N), 0)
+	cx = scipy.sparse.coo_matrix(co_occurence_matrix)
+	for i,j,v in zip(cx.row, cx.col, cx.data):
+		pmi = co_occurence_pmi(co_occurence_matrix, i, j, row_mat, col_mat, mat_sum)
+		sppmi_matrix[i][j] = max(pmi - log(N), 0)
 			
 	return sppmi_matrix
 
@@ -225,3 +226,4 @@ if __name__ == '__main__':
 	co_occurence_matrix = text_to_co_occurence_matrix(sys.argv[1])
 	context_matrix = sppmi_context_matrix(co_occurence_matrix)
 	pd.DataFrame(context_matrix).to_csv('context_matrix.csv')
+	
