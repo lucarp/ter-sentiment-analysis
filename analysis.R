@@ -127,8 +127,18 @@ res_nmf <- nmf(mat_df, 4000)
 
 
 # ------- WC-NMTF -------
+normalize <- function(x) {x / sqrt(sum(x^2))}
+
 res_wc_nmtf <- read.csv("wc-nmtf_Z_l1_cos_xnorm.csv", header = TRUE)
+res_wc_nmtf <- read.csv("wc-nmtf_Z_l1_cos.csv", header = TRUE)
+res_wc_nmtf <- read.csv("wc-nmtf_Z_l1_p.csv", header = TRUE)
+res_wc_nmtf <- read.csv("wc-nmtf_Z_l1.csv", header = TRUE)
+
+res_wc_nmtf <- normalize(res_wc_nmtf)
+
 label_res <- apply(res_wc_nmtf, MARGIN = 1, FUN=which.max)
+res_std <- apply(res_wc_nmtf, MARGIN = 1, FUN=sd)
+res_std
 
 layout(matrix(1:2))
 plot(labelK)
