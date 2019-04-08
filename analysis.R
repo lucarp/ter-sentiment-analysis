@@ -88,8 +88,8 @@ length(labelK)
 
 # - Plot 
 layout(matrix(1:2))
-plot(labelK)
-plot(res$cluster)
+plot(labelK, xlab = "Documents", ylab = "Cluster")
+plot(res$cluster, xlab = "Documents", ylab = "Cluster")
 
 # - Compute NMI and ARI
 # TODO - Do correclty the NMI and ARI (match cluster value with label value)
@@ -103,13 +103,17 @@ res2 <- skmeans(df, k)
 res2$cluster
 
 layout(matrix(1:2))
-plot(labelK)
-plot(res2$cluster)
+plot(labelK, xlab = "Documents", ylab = "Cluster")
+plot(res2$cluster, xlab = "Documents", ylab = "Cluster")
 
 NMI(res2$cluster, labelK)
 ARI(res2$cluster, labelK)
 # ----------------------------------------
 
+layout(matrix(1:3))
+plot(labelK, xlab = "Documents", ylab = "Cluster", main = "Real clusters")
+plot(res$cluster, xlab = "Documents", ylab = "Cluster", main = "K-Means clusters")
+plot(res2$cluster, xlab = "Documents", ylab = "Cluster", main = "Spherical K-Means clusters")
 
 # ------- PCA -------
 
