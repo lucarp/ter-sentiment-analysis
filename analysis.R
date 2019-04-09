@@ -25,8 +25,8 @@ label <- read.csv("mat_files/dataset_LABEL.csv", header = FALSE)
 #label
 # ----------------------------------------
 
-svds(df)
-
+#svds(df)
+normalize <- function(x) {x / sqrt(sum(x^2))}
 
 # ------- Split, if wanted, per autor -------
 # Get ID for each author
@@ -131,12 +131,16 @@ res_nmf <- nmf(mat_df, 4000)
 
 
 # ------- WC-NMTF -------
-normalize <- function(x) {x / sqrt(sum(x^2))}
 
-res_wc_nmtf <- read.csv("wc-nmtf_Z_l1_cos_xnorm.csv", header = TRUE)
-res_wc_nmtf <- read.csv("wc-nmtf_Z_l1_cos.csv", header = TRUE)
-res_wc_nmtf <- read.csv("wc-nmtf_Z_l1_p.csv", header = TRUE)
-res_wc_nmtf <- read.csv("wc-nmtf_Z_l1.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_cos_xnorm.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_cos.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_cos_2.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_cos_2_200.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_cos_5_200.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_p.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_p_2.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_5_200.csv", header = TRUE)
 
 res_wc_nmtf <- normalize(res_wc_nmtf)
 
@@ -153,6 +157,18 @@ ARI(label_res, labelK)
 
 # ----------------------------------------
 
+# ---------- Autoencoder results ----------
+k0 <- read.csv("result_autoencoder/autoencoder_0_code.csv")
+k0_ind <- read.csv("result_autoencoder/autoencoder_0_ind.csv")
+k1 <- read.csv("result_autoencoder/autoencoder_1_code.csv")
+k1_ind <- read.csv("result_autoencoder/autoencoder_1_ind.csv")
+k2 <- read.csv("result_autoencoder/autoencoder_2_code.csv")
+k2_ind <- read.csv("result_autoencoder/autoencoder_2_ind.csv")
+k3 <- read.csv("result_autoencoder/autoencoder_3_code.csv")
+k3_ind <- read.csv("result_autoencoder/autoencoder_3_ind.csv")
+k4 <- read.csv("result_autoencoder/autoencoder_4_code.csv")
+k4_ind <- read.csv("result_autoencoder/autoencoder_4_ind.csv")
+# ----------------------------------------
 
 # ----------------------------------------
 

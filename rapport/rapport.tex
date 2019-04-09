@@ -3,6 +3,7 @@
 \usepackage{amsfonts}
 \usepackage{graphicx}
 \usepackage{pdfpages}
+\usepackage{float}
 
 \graphicspath{ {./figures/} }
 
@@ -35,11 +36,11 @@ to do sentiment analysis on the "Scale Movie Review Dataset" (Bo Pang et al. [20
 
 \section{Preprocessing documents}
 
-Some preprocessing are needed to correctly use the documents for sentiment analysis. The more different words we have, the more difficult it will be to classify them. Therefore we want to remove words that are not important for the classification task. 
+Some preprocessing are needed to correctly use the documents for sentiment analysis. The more different words we have, the more difficult it will be to classify documents. Therefore we want to remove words that are not important for the classification task. 
 
-We search words that doesn't have any semantic values like the word \textit{"the"} or \textit{"you"} for example, we call this kind of words \textit{stop words}. We can also remove punctuation, numbers and put each word in lower case. Another preprocessing called \textit{lemmatization} tries to change each word into it's word stem. For example the word \textit{"gone"} will become \textit{"go"}. We have removed the words that appears less than 10 times across all the documents, indeed if a word is very rare then it's probably not important.
+We search words that doesn't have any semantic values like the word \textit{"the"} or \textit{"you"} for example, we call this kind of words \textit{stop words}. We can also remove punctuation, numbers and put each word in lower case. Another preprocessing called \textit{lemmatization} tries to change each word into it's word stem. For example the word \textit{"gone"} will become \textit{"go"}. We removed the words that appears less than 10 times across all the documents, indeed if a word is very rare then it's probably not important.
 
-The python library \textit{nltk} gives us a lot of tools to do this kind of preprocessing. After these preprocessings we finally had 9749 different words in total.
+The python library \textit{nltk} gives us a lot of tools to do this kind of preprocessing. After these preprocessings we finally had 9749 different words over all documents for \textbf{TODO} words before so we kept \textbf{TODO}\% of all the words.
 
 
 
@@ -51,8 +52,9 @@ One of the simplest encoding is the \textit{bag of words}, it's simply an histog
 
 Another method, based on the \textit{bag of words}, is the \textit{TF-IDF score} that stands for \textit{Term Frequency and Inverse Document Frequency}. This score is computed for each word in each document. It gives us in output a matrix \textbf{X} with the same properties than with the \textit{bag of words} except that we multiply the frequency of the word in the document by a factor depending on the frequency of the word across all the documents like in equation \ref{eq:tf-idf}. 
 
-\begin{equation} \label{eq:tf-idf}
+\begin{equation}
 x_{ij} = tf_{ij} \times \log\frac{N}{df_{j}}
+\label{eq:tf-idf}
 \end{equation}
 
 Where $tf_{ij}$ is the frequency of word \textit{j} in document \textit{i}. \textit{N} the total number of documents. $df_{j}$ is the number of documents containing the word \textit{j}. Multiplying the second factor to the frequency of the word allows us to give more importance to word that are rare across all documents. Indeed words that occurs frequently across documents will not help us very much to discriminate them.
@@ -60,8 +62,8 @@ Where $tf_{ij}$ is the frequency of word \textit{j} in document \textit{i}. \tex
 Finally we can apply L2 normalization to make each vector unit length, i.e. its norm equals 1. 
 
 For our first experiments we used the \textit{TF-IDF} matrix with L2 normalization.
-
-There are other ways to represent a document in vector. One of them is Doc2vec based on Word2vec
+\\\\
+There are other ways to represent a document in vector. One of them is Doc2vec based on Word2vec.
 
 
 \section{Sentiment analysis experiments}
@@ -80,10 +82,11 @@ To find the value of \textit{k} we can use the elbow criterion. It implies to co
 
 For a certain \textit{k} adding another cluster will not really help us in the data modeling, it will not add much to the variance explained. The behaviour expected is to see the first clusters adding a lot to the variance explained then the gain for each cluster added will drop and ideally we should see an angle in the graph.
 
-\begin{figure}[h] \label{fig:elbow}
+\begin{figure}[H] 
 \centering
 \includegraphics[width=\textwidth]{Kmeans_tf-idf-l2_elbow_criterion.png}
 \caption{Elbow criterion for K-Means algorithm.}
+\label{fig:elbow}
 \end{figure}
 
 We can see in figure \ref{fig:elbow} the elbow criterion for K-Means with the total within sum of squares as a measure. We can easily see an angle in the curve for the value \textit{k = 5}. This make sense because our documents are separated in 5 classes.
@@ -91,11 +94,39 @@ We can see in figure \ref{fig:elbow} the elbow criterion for K-Means with the to
 \paragraph{Documents clustering.}
 Then we use the K-Means and Spherical K-Means to separate our documents in clusters.
 
-\begin{figure}[h] \label{fig:kmeans}
+We see at the top of figure \ref{fig:kmeans_skmeans} the real clusters, then the clusters found by K-Means and finally those found by Spherical K-Means. In the real clusters graph we can see four "staircase" composed of five "steps" each. Each staircase correspond to an author and each step to the reviews having a same rating.
+
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{kmeans_and_skmeans.png}
 \caption{Cluster of each document with K-Means.}
+\label{fig:kmeans_skmeans}
 \end{figure}
+
+The clusters found by K-Means and Spherical K-Means are more or less the same. They both regroup the reviews of a same author in a same cluster. Instead of partitioning the documents according to their rating they were partitioned depending on their author. As we have four authors and five clusters the reviews of the last author were separated in two different clusters.
+
+This result can be explained by the fact that the writing styles within authors have more in common than the writing styles for different authors giving the same rating. In other words the reviews of an author are more similar than the reviews having the same rating (according to the Euclidean and cosinus distance).
+\\\\
+To evaluate the clustering we use as metrics the Normalized Mutual Information (NMI) and Adjusted Rand Index (ARI) between the true distribution and the one found by the algorithms.
+
+\begin{table}[H] \label{tab:kmeans_nmi_ari}
+\centering
+\begin{tabular}{|l|c|r|}
+  \hline
+  & NMI & ARI \\
+  \hline
+  K-Means & 0.023 & 0.016 \\
+  Spherical K-Means & 0.026 & 0.020 \\
+  \hline
+\end{tabular}
+\caption{NMI and ARI for K-Means and Spherical K-Means.}
+\end{table}
+
+
+
+\subsection{Autoencoder}
+
+
 
 \subsection{Non-Negative Matrix Tri-Factorization (NMTF)}
 
@@ -103,8 +134,6 @@ Then we use the K-Means and Spherical K-Means to separate our documents in clust
 This dictionary is composed of a lot of words (more than 150 000) and each of them is associated with two scores
 
 SentiWordNet founds 78\% (7604 in 9749) of the vocabulary of our documents.
-
-\subsection{Autoencoder}
 
 
 
