@@ -17,22 +17,13 @@ activation = 'relu'
 #loss_function = 'categorical_crossentropy'
 #loss_function = 'binary_crossentropy'
 loss_function = 'mean_squared_error'
-
-
-
 epoch = 1 #1000
-
 learning_rate = 0.00025
 
 test_ratio = 1/5
 
-
-
-
-
 l2_beta = 0.00001
 dropout = 0.
-
 useBatchNorm = False
 
 # -------------------------
