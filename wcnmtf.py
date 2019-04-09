@@ -5,6 +5,7 @@ import scipy
 import scipy.sparse
 import pandas as pd
 from preprocessing_tools import term_sentiment_matrix_to_context_matrix
+from sklearn.preprocessing import normalize
 
 def compute_loss(X, M, Z, S, W, Q, l_reg):
 	ZSW_T = np.dot(np.dot(Z, S), W.T)
@@ -32,7 +33,7 @@ def wc_nmtf(X, M, g, m, l_reg = 1):
 	M = scipy.sparse.csr_matrix(M)"""
 	
 	i = 0
-	epoch = 500
+	epoch = 200
 	print_loss_frequency = epoch / 100
 	stop_criterion = False
 	while not stop_criterion:
@@ -80,7 +81,11 @@ if __name__ == '__main__':
 	
 	mat = io.loadmat(sys.argv[1])
 	X = scipy.sparse.csr_matrix.todense(mat['X'])
+	X = normalize(X)
+	#M = term_sentiment_matrix_to_context_matrix(sys.argv[2], preprocess = True)
 	M = term_sentiment_matrix_to_context_matrix(sys.argv[2])
+	#M = term_sentiment_matrix_to_context_matrix(sys.argv[2], method='cos')
+	#M = pd.read_csv(sys.argv[2], index_col = 0)
 
 	g = int(sys.argv[3])
 	m = int(sys.argv[4])
