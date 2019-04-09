@@ -88,8 +88,8 @@ length(labelK)
 
 # - Plot 
 layout(matrix(1:2))
-plot(labelK)
-plot(res$cluster)
+plot(labelK, xlab = "Documents", ylab = "Cluster")
+plot(res$cluster, xlab = "Documents", ylab = "Cluster")
 
 # - Compute NMI and ARI
 # TODO - Do correclty the NMI and ARI (match cluster value with label value)
@@ -103,13 +103,17 @@ res2 <- skmeans(df, k)
 res2$cluster
 
 layout(matrix(1:2))
-plot(labelK)
-plot(res2$cluster)
+plot(labelK, xlab = "Documents", ylab = "Cluster")
+plot(res2$cluster, xlab = "Documents", ylab = "Cluster")
 
 NMI(res2$cluster, labelK)
 ARI(res2$cluster, labelK)
 # ----------------------------------------
 
+layout(matrix(1:3))
+plot(labelK, xlab = "Documents", ylab = "Cluster", main = "Real clusters")
+plot(res$cluster, xlab = "Documents", ylab = "Cluster", main = "K-Means clusters")
+plot(res2$cluster, xlab = "Documents", ylab = "Cluster", main = "Spherical K-Means clusters")
 
 # ------- PCA -------
 
@@ -127,8 +131,18 @@ res_nmf <- nmf(mat_df, 4000)
 
 
 # ------- WC-NMTF -------
+normalize <- function(x) {x / sqrt(sum(x^2))}
+
 res_wc_nmtf <- read.csv("wc-nmtf_Z_l1_cos_xnorm.csv", header = TRUE)
+res_wc_nmtf <- read.csv("wc-nmtf_Z_l1_cos.csv", header = TRUE)
+res_wc_nmtf <- read.csv("wc-nmtf_Z_l1_p.csv", header = TRUE)
+res_wc_nmtf <- read.csv("wc-nmtf_Z_l1.csv", header = TRUE)
+
+res_wc_nmtf <- normalize(res_wc_nmtf)
+
 label_res <- apply(res_wc_nmtf, MARGIN = 1, FUN=which.max)
+res_std <- apply(res_wc_nmtf, MARGIN = 1, FUN=sd)
+res_std
 
 layout(matrix(1:2))
 plot(labelK)

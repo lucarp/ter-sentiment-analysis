@@ -225,5 +225,6 @@ if __name__ == '__main__':
 	# text and vocab to co-occurence matrix
 	co_occurence_matrix = text_to_co_occurence_matrix(sys.argv[1])
 	context_matrix = sppmi_context_matrix(co_occurence_matrix)
-	pd.DataFrame(context_matrix).to_csv('context_matrix.csv')
+	sparse_context_matrix = scipy.sparse.csr_matrix(context_matrix)
+	scipy.io.savemat(sys.argv[1][:-4]+"_context_matrix.mat", {'X' : sparse_context_matrix})
 	
