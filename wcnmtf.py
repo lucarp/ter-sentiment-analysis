@@ -33,7 +33,7 @@ def wc_nmtf(X, M, g, m, l_reg = 1):
 	M = scipy.sparse.csr_matrix(M)"""
 	
 	i = 0
-	epoch = 200
+	epoch = 300
 	print_loss_frequency = epoch / 100
 	stop_criterion = False
 	while not stop_criterion:
@@ -69,9 +69,11 @@ def wc_nmtf(X, M, g, m, l_reg = 1):
 	"""Z = scipy.sparse.csr_matrix.todense(Z)
 	S = scipy.sparse.csr_matrix.todense(S)
 	W = scipy.sparse.csr_matrix.todense(W)
-	Q = scipy.sparse.csr_matrix.todense(Q)"""		
+	Q = scipy.sparse.csr_matrix.todense(Q)"""	
 	
-	return {"Z": Z, "S": S, "W": W, "Q": Q}
+	loss = compute_loss(X, M, Z, S, W, Q, l_reg)	
+	
+	return {"Z": Z, "S": S, "W": W, "Q": Q, "loss": loss}
 	
 if __name__ == '__main__':
 	"""n = 50
@@ -83,8 +85,8 @@ if __name__ == '__main__':
 	X = scipy.sparse.csr_matrix.todense(mat['X'])
 	X = normalize(X)
 	#M = term_sentiment_matrix_to_context_matrix(sys.argv[2], preprocess = True)
-	M = term_sentiment_matrix_to_context_matrix(sys.argv[2])
-	#M = term_sentiment_matrix_to_context_matrix(sys.argv[2], method='cos')
+	#M = term_sentiment_matrix_to_context_matrix(sys.argv[2])
+	M = term_sentiment_matrix_to_context_matrix(sys.argv[2], method='cos')
 	#M = pd.read_csv(sys.argv[2], index_col = 0)
 
 	g = int(sys.argv[3])
@@ -93,7 +95,17 @@ if __name__ == '__main__':
 
 	print(X.shape)
 
-	res = wc_nmtf(X, M, g, m, l_reg = l_reg)
-	
-	Z = res["Z"]
-	pd.DataFrame(Z).to_csv('wc-nmtf_Z.csv', index=False)
+	num_iter = 10
+	for _ in range(9):
+		best_loss = -1
+		for i in range(num_iter):
+			print("iter",i)
+			res = wc_nmtf(X, M, g, m, l_reg = l_reg)
+			if best_loss == -1 or best_loss > res["loss"]:
+				best_loss = res["loss"]
+				bestZ = res["Z"]
+		pd.DataFrame(bestZ).to_csv("wc-nmtf_Z_l"+str(l_reg)+".csv", index=False)
+		my_file = open("wc-nmtf_Z_loss.csv", "a")
+		my_file.write(str(best_loss)+"\n")
+		my_file.close()
+		l_reg *= 10

@@ -16,8 +16,11 @@ X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_5.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_no_clean.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_100.csv_tf-idf-l2.mat")
+
+X <- read.csv("doc2vec_matrix.csv", header = FALSE)
+
 df <- X$X
-#df
+df <- X
 dim(df)
 mat_df <- as.matrix(df)
 dim(mat_df)
@@ -99,7 +102,7 @@ ARI(res$cluster, labelK)
 
 
 # ------- Spherical K-means -------
-res2 <- skmeans(df, k)
+res2 <- skmeans(mat_df, k)
 res2$cluster
 
 layout(matrix(1:2))
@@ -142,11 +145,18 @@ res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_p_2.csv", header = TRUE)
 res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1.csv", header = TRUE)
 res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_5_200.csv", header = TRUE)
 
-res_wc_nmtf <- normalize(res_wc_nmtf)
+normalize <- function(x) {x / sqrt(rowSums(x^2))}
+
+res_wc_nmtf <- t(normalize(t(res_wc_nmtf)))
+
+#apply(res_wc_nmtf, MARGIN = 1, FUN=normalize)
+
+#sqrt(sum(res_wc_nmtf[,1]^2))
+
 
 label_res <- apply(res_wc_nmtf, MARGIN = 1, FUN=which.max)
-res_std <- apply(res_wc_nmtf, MARGIN = 1, FUN=sd)
-res_std
+#res_std <- apply(res_wc_nmtf, MARGIN = 1, FUN=sd)
+#res_std
 
 layout(matrix(1:2))
 plot(labelK)
@@ -158,16 +168,26 @@ ARI(label_res, labelK)
 # ----------------------------------------
 
 # ---------- Autoencoder results ----------
-k0 <- read.csv("result_autoencoder/autoencoder_0_code.csv")
-k0_ind <- read.csv("result_autoencoder/autoencoder_0_ind.csv")
-k1 <- read.csv("result_autoencoder/autoencoder_1_code.csv")
-k1_ind <- read.csv("result_autoencoder/autoencoder_1_ind.csv")
-k2 <- read.csv("result_autoencoder/autoencoder_2_code.csv")
-k2_ind <- read.csv("result_autoencoder/autoencoder_2_ind.csv")
-k3 <- read.csv("result_autoencoder/autoencoder_3_code.csv")
-k3_ind <- read.csv("result_autoencoder/autoencoder_3_ind.csv")
-k4 <- read.csv("result_autoencoder/autoencoder_4_code.csv")
-k4_ind <- read.csv("result_autoencoder/autoencoder_4_ind.csv")
+k0 <- read.csv("result_autoencoder/autoencoder_0_code.csv", row.names = 1)
+k0_ind <- read.csv("result_autoencoder/autoencoder_0_ind.csv", row.names = 1)
+k1 <- read.csv("result_autoencoder/autoencoder_1_code.csv", row.names = 1)
+k1_ind <- read.csv("result_autoencoder/autoencoder_1_ind.csv", row.names = 1)
+k2 <- read.csv("result_autoencoder/autoencoder_2_code.csv", row.names = 1)
+k2_ind <- read.csv("result_autoencoder/autoencoder_2_ind.csv", row.names = 1)
+k3 <- read.csv("result_autoencoder/autoencoder_3_code.csv", row.names = 1)
+k3_ind <- read.csv("result_autoencoder/autoencoder_3_ind.csv", row.names = 1)
+k4 <- read.csv("result_autoencoder/autoencoder_4_code.csv", row.names = 1)
+k4_ind <- read.csv("result_autoencoder/autoencoder_4_ind.csv", row.names = 1)
+
+res_ae = rbind(k0, k1, k2, k3, k4)
+k_ind = rbind(k0_ind, k1_ind, k2_ind, k3_ind, k4_ind)
+res_ae = res_ae[order(k_ind),]
+label_res_ae <- apply(res_ae, MARGIN = 1, FUN=which.max)
+
+layout(matrix(1:2))
+plot(labelK)
+plot(label_res_ae)
+
 # ----------------------------------------
 
 # ----------------------------------------
@@ -175,3 +195,4 @@ k4_ind <- read.csv("result_autoencoder/autoencoder_4_ind.csv")
 #library(cluster)
 #library(factoextra)
 #fviz_cluster(res, data = df)
+1
