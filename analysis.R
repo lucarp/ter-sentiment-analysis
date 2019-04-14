@@ -6,6 +6,9 @@ library(skmeans)
 library("FactoMineR")
 library(NMF)
 
+normalize <- function(x) {x / sqrt(rowSums(x^2))}
+normalizeByCol <- function(df) { t( normalize( t(df) ) )}
+
 # ------- Dataset loading -------
 #X <- readMat("mat_files/output_30.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_30.csv_bow.mat")
@@ -17,19 +20,28 @@ X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_no_clean.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_100.csv_tf-idf-l2.mat")
 
-X <- read.csv("doc2vec_matrix.csv", header = FALSE)
+#X <- read.csv("doc2vec_matrix.csv", header = FALSE)
 
 df <- X$X
-df <- X
 dim(df)
 mat_df <- as.matrix(df)
+mat_df <- normalize(mat_df)
 dim(mat_df)
 label <- read.csv("mat_files/dataset_LABEL.csv", header = FALSE)
 #label
+
+S <- read.csv("dataset/output_not_original_10_term_sentiment.csv")[,3:5]
+S <- as.matrix(head(S, -1))
+S <- normalize(S)
+dim(S)
+M <- S %*% t(S)
+M <- normalize(M)
+mat_df <- mat_df %*% M
+mat_df <- normalize(mat_df)
+dim(mat_df)
 # ----------------------------------------
 
 #svds(df)
-normalize <- function(x) {x / sqrt(sum(x^2))}
 
 # ------- Split, if wanted, per autor -------
 # Get ID for each author
@@ -134,7 +146,6 @@ res_nmf <- nmf(mat_df, 4000)
 
 
 # ------- WC-NMTF -------
-
 res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_cos_xnorm.csv", header = TRUE)
 res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_cos.csv", header = TRUE)
 res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_cos_2.csv", header = TRUE)
@@ -145,14 +156,24 @@ res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_p_2.csv", header = TRUE)
 res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1.csv", header = TRUE)
 res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_5_200.csv", header = TRUE)
 
-normalize <- function(x) {x / sqrt(rowSums(x^2))}
+# cos files
+res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l1000.0.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l100.0.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l10.0.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l1.0.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l0.1.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l0.01.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l0.001.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l0.0001.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l1e-05.csv", header = TRUE)
 
-res_wc_nmtf <- t(normalize(t(res_wc_nmtf)))
+# tra files
+
+# print results
+res_wc_nmtf <- t( normalize( t(res_wc_nmtf) ) )
 
 #apply(res_wc_nmtf, MARGIN = 1, FUN=normalize)
-
 #sqrt(sum(res_wc_nmtf[,1]^2))
-
 
 label_res <- apply(res_wc_nmtf, MARGIN = 1, FUN=which.max)
 #res_std <- apply(res_wc_nmtf, MARGIN = 1, FUN=sd)
@@ -162,8 +183,28 @@ layout(matrix(1:2))
 plot(labelK)
 plot(label_res)
 
-NMI(label_res, labelK)
-ARI(label_res, labelK)
+# compute nmi and ari for each file
+
+lambdas <- c("10000.0", "1000.0", "100.0", "10.0", "1.0", "0.1", "0.01", "0.001", "0.0001", "1e-05", "0.0")
+lambdas <- rev(lambdas)
+
+cos_nmi <- c()
+cos_ari <- c()
+for(lambda in lambdas){
+  file <- paste("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l", lambda, ".csv", sep = "")
+  res_wc_nmtf <- read.csv(file, header = TRUE)
+  res_wc_nmtf <- t( normalize( t(res_wc_nmtf) ) )
+  label_res <- apply(res_wc_nmtf, MARGIN = 1, FUN=which.max)
+  t_nmi <- NMI(label_res, labelK)
+  t_ari <- ARI(label_res, labelK)
+  cos_nmi <- c(cos_nmi, t_nmi)
+  cos_ari <- c(cos_ari, t_ari)
+}
+
+plot(cos_nmi, type = "b", ylab = "NMI", xlab = "Lambda", xaxt = "n")
+axis(1, at=1:length(lambdas), labels=lambdas)
+plot(cos_ari, type = "b", ylab = "ARI", xlab = "Lambda", xaxt = "n")
+axis(1, at=1:length(lambdas), labels=lambdas)
 
 # ----------------------------------------
 
@@ -195,4 +236,3 @@ plot(label_res_ae)
 #library(cluster)
 #library(factoextra)
 #fviz_cluster(res, data = df)
-1
