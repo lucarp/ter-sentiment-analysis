@@ -4,7 +4,7 @@ from scipy import io
 import scipy
 import scipy.sparse
 import pandas as pd
-from preprocessing_tools import term_sentiment_matrix_to_context_matrix
+from preprocessing_tools import term_sentiment_matrix_to_context_matrix, sppmi_context_matrix
 from sklearn.preprocessing import normalize
 
 def compute_loss(X, M, Z, S, W, Q, l_reg):
@@ -81,6 +81,8 @@ if __name__ == '__main__':
 	X = np.random.rand(n, d)
 	M = np.random.rand(d, d)"""
 	
+	print("Usage: {} X_mat_file M_csv_file g m lambda iter_lamba_x10".format(sys.argv[0]))
+	
 	mat = io.loadmat(sys.argv[1])
 	X = scipy.sparse.csr_matrix.todense(mat['X'])
 	X = normalize(X)
@@ -89,6 +91,8 @@ if __name__ == '__main__':
 	M = term_sentiment_matrix_to_context_matrix(sys.argv[2], method='cos')
 	#M = pd.read_csv(sys.argv[2], index_col = 0)
 
+	M = sppmi_context_matrix(M, N = 1)
+
 	g = int(sys.argv[3])
 	m = int(sys.argv[4])
 	l_reg = float(sys.argv[5])
@@ -96,7 +100,7 @@ if __name__ == '__main__':
 	print(X.shape)
 
 	num_iter = 10
-	for _ in range(9):
+	for _ in range(int(sys.argv[6])):
 		best_loss = -1
 		for i in range(num_iter):
 			print("iter",i)
