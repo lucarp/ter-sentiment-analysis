@@ -20,7 +20,9 @@ X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_no_clean.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_100.csv_tf-idf-l2.mat")
 
-X <- readMat("../density_matrices.mat")
+#X <- readMat("../density_matrices.mat")
+
+X <- readMat("mat_files/output_not_original_most_1000.csv_tf-idf-l2.mat")
 
 #X <- read.csv("doc2vec_matrix.csv", header = FALSE)
                  
@@ -211,6 +213,19 @@ axis(1, at=1:length(lambdas), labels=lambdas)
 plot(cos_ari, type = "b", ylab = "ARI", xlab = "Lambda", xaxt = "n")
 axis(1, at=1:length(lambdas), labels=lambdas)
 
+# ----------------------------------------
+
+
+# ------- LDA -------
+res_lda <- read.csv("latent_dirichlet_allocation_res.csv", header = TRUE)
+# print results
+res_lda <- t( normalize( t(res_lda) ) )
+
+label_res <- apply(res_lda, MARGIN = 1, FUN=which.max)
+
+layout(matrix(1:2))
+plot(labelK)
+plot(label_res)
 # ----------------------------------------
 
 # ---------- Autoencoder results ----------
