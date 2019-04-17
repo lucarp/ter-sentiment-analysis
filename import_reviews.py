@@ -24,11 +24,9 @@ def countWordsOnReviews(df):
     
     return wordCounter
 
-def cleanseData(df, threshold, vocab_file):
-    counter = countWordsOnReviews(df)
-    vocab = {x : counter[x] for x in counter if counter[x] >= threshold }
+def cleanseData(df, threshold, vocab_file_out, vocab):
     print('Vocabulary size: ' + str(len(vocab)))
-    f = open(vocab_file, 'w' )
+    f = open(vocab_file_out, 'w' )
     f.write(repr(vocab))
     f.close()
     new_df_review = []
@@ -45,9 +43,21 @@ def cleanseData(df, threshold, vocab_file):
     df = pd.concat([df, new_df_review], axis=1)
     return df,vocab
 
-def cleanAndSaveData(fileNameIn, fileNameOut, threshold, vocab_file):
+def cleanseData_below_threshold(df, threshold, vocab_file_out):
+    counter = countWordsOnReviews(df)    
+    vocab = {x : counter[x] for x in counter if counter[x] >= threshold }
+    return cleanseData(df, threshold, vocab_file_out, vocab)
+
+def cleanseData_most_common(df, threshold, vocab_file_out):
+    counter = countWordsOnReviews(df)
+    counter = counter.most_common(threshold)  
+    vocab = {word : freq for word, freq in counter}
+    return cleanseData(df, threshold, vocab_file_out, vocab)
+
+def cleanAndSaveData(fileNameIn, fileNameOut, threshold, vocab_file_out):
     df = pd.read_csv(fileNameIn, header=0, index_col=0)
-    df,vocab = cleanseData(df, threshold, vocab_file)
+    #df,vocab = cleanseData_below_threshold(df, threshold, vocab_file_out)
+    df,vocab = cleanseData_most_common(df, threshold, vocab_file_out)
     df.to_csv(fileNameOut)
 
 def importDataset(path_to_dataset, clean_threshold):
@@ -72,7 +82,7 @@ def importDataset(path_to_dataset, clean_threshold):
         frames.append(pd.DataFrame(data={'ID': ids[0], 'Author': author, 'Rating': ratings[0], 'Review': reviews}))
     df = pd.concat(frames)
     df.to_csv('output_without_clean.csv')
-    df, vocab = cleanseData(df, clean_threshold, 'vocab.json')
+    df, vocab = cleanseData_below_threshold(df, clean_threshold, 'vocab.json')
     df.to_csv('output.csv')
     return df,vocab
 
@@ -102,7 +112,7 @@ def importPreProcessedDataset(path_to_dataset, clean_threshold):
         frames.append(pd.DataFrame(data={'ID': ids[0], 'Author': author, 'Rating': ratings[0], 'Review': reviews}))
     df = pd.concat(frames)
     df.to_csv('output_not_original_without_clean.csv')
-    df, vocab = cleanseData(df, clean_threshold, 'vocab_not_original.json')
+    df, vocab = cleanseData_below_threshold(df, clean_threshold, 'vocab_not_original.json')
     df.to_csv('output_not_original.csv')
     return df,vocab
 
@@ -148,7 +158,10 @@ def preprocess(words):
     return ' '.join(str(x) for x in new_words)
 
 
-"""print("--- Original Dataset")
-importDataset('dataset', 30)
-print("--- PreProcessed Dataset")
-importPreProcessedDataset('dataset', 30)"""
+
+if __name__ == '__main__':
+	cleanAndSaveData(sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4])
+	"""print("--- Original Dataset")
+	importDataset('dataset', 30)
+	print("--- PreProcessed Dataset")
+	importPreProcessedDataset('dataset', 30)"""

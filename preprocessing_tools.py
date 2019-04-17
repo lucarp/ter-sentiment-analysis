@@ -206,9 +206,9 @@ if __name__ == '__main__':
 	print("save tf-idf...")
 	df, X = file_to_tfidf(sys.argv[1])
 	scipy.io.savemat(sys.argv[1]+"_tf-idf.mat", {'X' : X})
-	print("save tf-idf with l2...")
+	print("save tf-idf with l2...")"""
 	df, X = file_to_tfidf_l2(sys.argv[1])
-	scipy.io.savemat(sys.argv[1]+"_tf-idf-l2.mat", {'X' : X})"""
+	scipy.io.savemat(sys.argv[1]+"_tf-idf-l2.mat", {'X' : X})
 
 	# output to vocab file
 	"""df, X = file_to_tfidf_l2(sys.argv[1])
@@ -223,7 +223,7 @@ if __name__ == '__main__':
 	#context_matrix_cos = term_sentiment_matrix_to_context_matrix(sys.argv[1], method='cos')
 	
 	# text and vocab to co-occurence matrix
-	co_occurence_matrix = text_to_co_occurence_matrix(sys.argv[1])
+	"""co_occurence_matrix = text_to_co_occurence_matrix(sys.argv[1])
 	context_matrix = sppmi_context_matrix(co_occurence_matrix)
 	sparse_context_matrix = scipy.sparse.csr_matrix(context_matrix)
-	scipy.io.savemat(sys.argv[1][:-4]+"_context_matrix.mat", {'X' : sparse_context_matrix})
+	scipy.io.savemat(sys.argv[1][:-4]+"_context_matrix.mat", {'X' : sparse_context_matrix})"""

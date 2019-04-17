@@ -20,8 +20,10 @@ X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_no_clean.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_100.csv_tf-idf-l2.mat")
 
-#X <- read.csv("doc2vec_matrix.csv", header = FALSE)
+X <- readMat("../density_matrices.mat")
 
+#X <- read.csv("doc2vec_matrix.csv", header = FALSE)
+                 
 df <- X$X
 dim(df)
 mat_df <- as.matrix(df)
@@ -29,6 +31,11 @@ mat_df <- normalize(mat_df)
 dim(mat_df)
 label <- read.csv("mat_files/dataset_LABEL.csv", header = FALSE)
 #label
+
+k <- 5
+labelK <- apply(label, MARGIN = 1, FUN=function(x) max(1, ceiling(x*k))) # true label (1 to k)
+
+
 
 S <- read.csv("dataset/output_not_original_10_term_sentiment.csv")[,3:5]
 S <- as.matrix(head(S, -1))
@@ -64,10 +71,6 @@ df <- df[2335:3236,]
 #label <- matrix(label[3237:length(label),])
 #df <- df[3237:length(label),]
 # ----------------------------------------
-
-
-k <- 5
-labelK <- apply(label, MARGIN = 1, FUN=function(x) max(1, ceiling(x*k))) # true label (1 to k)
 
 
 # ------- K-means -------
