@@ -8,6 +8,7 @@ library(NMF)
 
 normalize <- function(x) {x / sqrt(rowSums(x^2))}
 normalizeByCol <- function(df) { t( normalize( t(df) ) )}
+sent_process <- function(x){ (x[1] - x[2]) * 10 + x[3] }
 
 # ------- Dataset loading -------
 #X <- readMat("mat_files/output_30.csv_tf-idf-l2.mat")
@@ -22,7 +23,7 @@ X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
 
 #X <- readMat("../density_matrices.mat")
 
-X <- readMat("mat_files/output_not_original_most_1000.csv_tf-idf-l2.mat")
+#X <- readMat("mat_files/output_not_original_most_1000.csv_tf-idf-l2.mat")
 
 #X <- read.csv("doc2vec_matrix.csv", header = FALSE)
                  
@@ -38,13 +39,18 @@ k <- 5
 labelK <- apply(label, MARGIN = 1, FUN=function(x) max(1, ceiling(x*k))) # true label (1 to k)
 
 
-
+# ---
 S <- read.csv("dataset/output_not_original_10_term_sentiment.csv")[,3:5]
 S <- as.matrix(head(S, -1))
 S <- normalize(S)
 dim(S)
+
+M <- apply(S, MARGIN = 1, FUN = sent_process)
+M <- diag(M)
+
 M <- S %*% t(S)
 M <- normalize(M)
+
 mat_df <- mat_df %*% M
 mat_df <- normalize(mat_df)
 dim(mat_df)
@@ -251,6 +257,15 @@ plot(label_res_ae)
 
 # ----------------------------------------
 
+
+# ----------------------------------------
+df <- read.csv("dataset/output_not_original_10_doc_sentiment.csv", row.names = 1)
+
+temp <- apply(df, MARGIN = 1, FUN = sent_process)
+
+layout(matrix(1:2))
+plot(labelK)
+plot(temp)
 # ----------------------------------------
 
 #library(cluster)

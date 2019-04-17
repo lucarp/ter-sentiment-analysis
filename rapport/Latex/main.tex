@@ -26,7 +26,7 @@ Sentiment Analysis (or opinion mining) is the process of finding the sentiment o
 Unsupervised learning (or clustering) is the process of partitioning a dataset in different groups having similarities, without the help of an oracle (a "teacher" saying the answer, i.e. the real group of each data).
 
 During our computer science master degree at Paris University we were asked
-to do sentiment analysis on the "Scale Movie Review Dataset" (Bo Pang et al. [2005]) using unsupervised learning. This dataset is composed of 5006 movie reviews from 4 different authors. Each review has already it's own label but the goal of this work is to see what can do unsupervised learning on this kind of problem. The label is a rating like described upper (1 to 5 stars).
+to do sentiment analysis on the "Scale Movie Review Dataset v1.0" [Pang et al., 2005] using unsupervised learning. This dataset is composed of 5006 movie reviews from 4 different authors. Each review has already it's own label but the goal of this work is to see what can do unsupervised learning on this kind of problem. The label is a rating like described upper (1 to 5 stars).
 
 
 
@@ -48,7 +48,7 @@ The python library \textit{nltk} gives us a lot of tools to do this kind of prep
 
 The first step to do sentiment analysis is to encode all documents in a vector format that will be used as input for a classification algorithm for example. 
 
-One of the simplest encoding is the \textit{bag of words}, it's simply an histogram of the words present in each document. The output is a matrix \textbf{X} $\in \mathbb{R}^{n \times d}_{+}$ where \textit{n} is the number of documents and \textit{d} the total number of words within all documents. $x_{ij}$ is the number of times the word corresponding to the column \textit{j} appears in the document \textit{i}.
+One of the simplest encoding is the \textit{bag of words}, it's simply an histogram of the words present in each document. The output is a matrix \textbf{X} $\in \mathbb{R}^{n \times t}_{+}$ where \textit{n} is the number of documents and \textit{t} the total number of words within all documents. $x_{ij}$ is the number of times the word corresponding to the column \textit{j} appears in the document \textit{i}. We call this matrix the document/term matrix.
 
 Another method, based on the \textit{bag of words}, is the \textit{TF-IDF score} that stands for \textit{Term Frequency and Inverse Document Frequency}. This score is computed for each word in each document. It gives us in output a matrix \textbf{X} with the same properties than with the \textit{bag of words} except that we multiply the frequency of the word in the document by a factor depending on the frequency of the word across all the documents like in equation \ref{eq:tf-idf}. 
 
@@ -122,25 +122,44 @@ To evaluate the clustering we use as metrics the Normalized Mutual Information (
 \caption{NMI and ARI for K-Means and Spherical K-Means.}
 \end{table}
 
+\subsection{Use of external information: SentiWordNet}
+After these results with K-Means and Spherical K-Means we have decided to add external information to help algorithms to correctly extract the sentiment of the reviews.
 
-\subsection{Singular Value Decomposition (SVD)}
+We found SentiWordNet [Baccianella et al., 2010], this is a dictionary composed of a lot of words (more than 150 000) and each of them is associated with two scores, each of them indicate how much the word is positive or negative. SentiWordNet founds 78\% (7604 in 9749 words) of the vocabulary of our documents.
 
+Then, with the help of the SentiWordNet dictionary, we have made the matrix \textbf{S} $\in \mathbb{R}^{t \times 3}_{+}$ with \textit{t} the total number of words within all documents. Each word is associated with 3 scores, how much is a positive, negative and neutral word. A word is neutral if it doesn't have a positive or a negative score or if it's not found in the dictionary. We call this matrix the term/sentiment matrix.
 
+\subsection{Variant of Word Co-Occurence Non-Negative Matrix Tri-Factorization (WC-NMTF)}
 
-\subsection{Autoencoder}
+This method is based on Non-Negative Matrix Tri-Factorization (NMTF) [Long et al., 2005] et [Ding et al., 2006] which factorizes an input matrix \textbf{X} $\in \mathbb{R}^{n \times t}_{+}$ into three matrices \textbf{Z} $\in \mathbb{R}^{n \times g}_{+}$, \textbf{S} $\in \mathbb{R}^{g \times m}_{+}$ and \textbf{W} $\in \mathbb{R}^{t \times m}_{+}$ such that all matrices doesn't have any negative values and:
 
+\begin{equation}
+X \approx ZSW^{T}
+\label{eq:nmf}
+\end{equation}
 
+\textbf{Z} plays the role of the cluster membership of each document if we have \textit{g} clusters. 
 
-\subsection{Non-Negative Matrix Tri-Factorization (NMTF)}
+The Word Co-Occurence Non-Negative Matrix Tri-Factorization (WC-NMTF) [Salah et al., 2018] uses the same factorization but also factorizes an other matrix \textbf{M} $\in \mathbb{R}^{t \times t}_{+}$ into the matrices \textbf{W} $\in \mathbb{R}^{t \times m}_{+}$ and \textbf{Q} $\in \mathbb{R}^{t \times m}_{+}$ such that:
 
-\paragraph{SentiWordNet}
-This dictionary is composed of a lot of words (more than 150 000) and each of them is associated with two scores
+\begin{equation}
+M \approx WQ^{T}
+\label{eq:nmtf}
+\end{equation}
 
-SentiWordNet founds 78\% (7604 in 9749) of the vocabulary of our documents.
+WC-NMTF factorizes both \textbf{X} and \textbf{M}. Note that the same \textbf{W} matrix is used in equation \ref{eq:nmf} and \ref{eq:nmtf}.
 
+In our case \textbf{X} is the document/term matrix. \textbf{W} is a term/term matrix also called the context matrix.
 
 
 \section*{References}
-Bo Pang and Lillian Lee. 2005. Seeing stars: Exploiting class relationships for sentiment categorization with respect to rating scales.
+
+\begin{list_type}  
+\item [Pang et al., 2005] - Bo Pang and Lillian Lee. 2005. Seeing stars: Exploiting class relationships for sentiment categorization with respect to rating scales. 
+\item [Long et al., 2005] - Bo Long, Zhongfei (Mark) Zhang and Philip S. Yu. 2005. Co-clustering by Block Value Decomposition.
+\item [Ding et al., 2006] - Chris Ding, Tao Li, Wei Peng Haesun Park. 2006. Orthogonal Nonnegative Matrix Tri-Factorizations for Clustering.
+\item [Baccianella et al., 2010] - Stefano Baccianella, Andra Esuli,and Fabrizio Sebastiani. 2010. SENTIWORDNET 3.0: An Enhanced Lexical Resource for Sentiment Analysis and Opinion Mining.
+\item [Salah et al., 2018] - Aghiles Salah, Melissa Ailem and Mohamed Nadif. 2018. Word Co-Occurrence Regularized Non-Negative Matrix Tri-Factorization for Text Data Co-Clustering.
+\end{list_type}
 
 \end{document}

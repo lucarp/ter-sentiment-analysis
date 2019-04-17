@@ -9,7 +9,7 @@ X=mat['X'].todense()
 
 print(X.shape)
 
-lda = LatentDirichletAllocation(n_components = 5, verbose = 100, max_iter = 100)
+lda = LatentDirichletAllocation(n_components = 5, verbose = 3, max_iter = 100)
 lda.fit(X) 
 res = lda.transform(X)
 print(res)
