@@ -8,12 +8,14 @@
 \graphicspath{ {./figures/} }
 
 \title{Unsupervised Sentiment Analysis}
-\author{by RODRIGUES PEREIRA Lucas and PONT Mathieu\\\\directed by FEBRISSY Mickael and LABIOD Lazhar\\\\Paris University, France}
+\author{Lucas Rodrigues Pereira and Mathieu Pont\\\\directed by Mickael Febrissy and Lazhar Labiod\\\\Paris University, France}
 \date{May 2019}
 
 \begin{document}
 
 \maketitle
+
+
 
 \abstract{blablabla}
 
@@ -62,13 +64,13 @@ Where $tf_{ij}$ is the frequency of word \textit{j} in document \textit{i}. \tex
 Finally we can apply L2 normalization to make each vector unit length, i.e. its norm equals 1. 
 
 For our first experiments we used the \textit{TF-IDF} matrix with L2 normalization.
-\\\\
-There are other ways to represent a document in vector. One of them is Doc2vec based on Word2vec.
+
 
 
 \section{Sentiment analysis experiments}
 
 Here we use many unsupervised algorithms trying to find the correct class of each document.
+
 
 
 \subsection{K-Means and Spherical K-Means}
@@ -122,12 +124,34 @@ To evaluate the clustering we use as metrics the Normalized Mutual Information (
 \caption{NMI and ARI for K-Means and Spherical K-Means.}
 \end{table}
 
+
+
+\subsection{Other unsupervised algorithms}
+
+We then try to use other unsupervised algorithms such as Deep Autoencoder and Latent Dirichlet Allocation (LDA).
+
+
+
+\subsection{Other ways to represent documents}
+
+We also try to represent the documents with other methods such as Doc2Vec [Le et al., 2014] and the Density Matrix Representation [Zhang et al., 2018] and then re-run the unsupervised algorithms on the dataset produced by these methods.
+
+We've used a variant of the Density Matrix Representation, instead of only use the term frequency for the computation we used the \textit{TF-IDF} score normalized with L2 since this score seems to be better than the simple term frequency score.
+
+The library \textit{gensym} was used for Doc2Vec, the Density Matrix Representation was implemented from scratch.
+
+K-Means and Spherical K-Means produced the same results than with the \textit{TF-IDF} matrix with L2 normalization, the clusters corresponded to the authors of the documents was found instead of the rating.
+
+
+
 \subsection{Use of external information: SentiWordNet}
-After these results with K-Means and Spherical K-Means we have decided to add external information to help algorithms to correctly extract the sentiment of the reviews.
+After these results we have decided to add external information to help algorithms to correctly extract the sentiment of the reviews.
 
 We found SentiWordNet [Baccianella et al., 2010], this is a dictionary composed of a lot of words (more than 150 000) and each of them is associated with two scores, each of them indicate how much the word is positive or negative. SentiWordNet founds 78\% (7604 in 9749 words) of the vocabulary of our documents.
 
 Then, with the help of the SentiWordNet dictionary, we have made the matrix \textbf{S} $\in \mathbb{R}^{t \times 3}_{+}$ with \textit{t} the total number of words within all documents. Each word is associated with 3 scores, how much is a positive, negative and neutral word. A word is neutral if it doesn't have a positive or a negative score or if it's not found in the dictionary. We call this matrix the term/sentiment matrix.
+
+
 
 \subsection{Variant of Word Co-Occurence Non-Negative Matrix Tri-Factorization (WC-NMTF)}
 
@@ -152,14 +176,19 @@ WC-NMTF factorizes both \textbf{X} and \textbf{M}. Note that the same \textbf{W}
 In our case \textbf{X} is the document/term matrix. \textbf{W} is a term/term matrix also called the context matrix.
 
 
+
 \section*{References}
 
 \begin{list_type}  
-\item [Pang et al., 2005] - Bo Pang and Lillian Lee. 2005. Seeing stars: Exploiting class relationships for sentiment categorization with respect to rating scales. 
-\item [Long et al., 2005] - Bo Long, Zhongfei (Mark) Zhang and Philip S. Yu. 2005. Co-clustering by Block Value Decomposition.
-\item [Ding et al., 2006] - Chris Ding, Tao Li, Wei Peng Haesun Park. 2006. Orthogonal Nonnegative Matrix Tri-Factorizations for Clustering.
-\item [Baccianella et al., 2010] - Stefano Baccianella, Andra Esuli,and Fabrizio Sebastiani. 2010. SENTIWORDNET 3.0: An Enhanced Lexical Resource for Sentiment Analysis and Opinion Mining.
-\item [Salah et al., 2018] - Aghiles Salah, Melissa Ailem and Mohamed Nadif. 2018. Word Co-Occurrence Regularized Non-Negative Matrix Tri-Factorization for Text Data Co-Clustering.
+\item [Pang et al., 2005] - Bo Pang and Lillian Lee. Seeing stars: Exploiting class relationships for sentiment categorization with respect to rating scales. 2005.
+\item [Long et al., 2005] - Bo Long, Zhongfei (Mark) Zhang and Philip S. Yu. Co-clustering by Block Value Decomposition. 2005.
+\item [Ding et al., 2006] - Chris Ding, Tao Li, Wei Peng Haesun Park. Orthogonal Nonnegative Matrix Tri-Factorizations for Clustering. 2006.
+\item [Baccianella et al., 2010] - Stefano Baccianella, Andra Esuli,and Fabrizio Sebastiani. SENTIWORDNET 3.0: An Enhanced Lexical Resource for Sentiment Analysis and Opinion Mining. 2010.
+\item [Le et al., 2014] - Quoc V. Le and Tomas Mikolov. Distributed Representations of Sentences and Documents. 2014.
+\item [Salah et al., 2018] - Aghiles Salah, Melissa Ailem and Mohamed Nadif. Word Co-Occurrence Regularized Non-Negative Matrix Tri-Factorization for Text Data Co-Clustering. 2018.
+\item [Zhang et al., 2018] - Yazhou Zhang, Dawei Song, Xiang Li and Peng Zhang. Unsupervised Sentiment Analysis
+of Twitter Posts Using Density Matrix. 2018.
+Representation.
 \end{list_type}
 
 \end{document}

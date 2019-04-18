@@ -10,7 +10,7 @@ normalize <- function(x) {x / sqrt(rowSums(x^2))}
 normalizeByCol <- function(df) { t( normalize( t(df) ) )}
 sent_process <- function(x){ (x[1] - x[2]) * 10 + x[3] }
 
-# ------- Dataset loading -------
+# -------------- Dataset loading --------------
 #X <- readMat("mat_files/output_30.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_30.csv_bow.mat")
 #X <- readMat("mat_files/output_not_original_30.csv_tf-idf.mat")
@@ -58,7 +58,7 @@ dim(mat_df)
 
 #svds(df)
 
-# ------- Split, if wanted, per autor -------
+# -------------- Split, if wanted, per autor --------------
 # Get ID for each author
 temp <- label$V1[1]
 for(i in 2:length(label$V1)) { 
@@ -81,7 +81,7 @@ df <- df[2335:3236,]
 # ----------------------------------------
 
 
-# ------- K-means -------
+# -------------- K-means --------------
 # - Elbow criteron
 rng <- 2:10 #K from 2 to 20
 tries <- 10 #Run the K Means algorithm x times
@@ -124,7 +124,7 @@ ARI(res$cluster, labelK)
 # ----------------------------------------
 
 
-# ------- Spherical K-means -------
+# -------------- Spherical K-means --------------
 res2 <- skmeans(mat_df, k)
 res2$cluster
 
@@ -141,7 +141,7 @@ plot(labelK, xlab = "Documents", ylab = "Cluster", main = "Real clusters")
 plot(res$cluster, xlab = "Documents", ylab = "Cluster", main = "K-Means clusters")
 plot(res2$cluster, xlab = "Documents", ylab = "Cluster", main = "Spherical K-Means clusters")
 
-# ------- PCA -------
+# -------------- PCA --------------
 
 layout(matrix(c(1,2), ncol=2))
 resPCA <- PCA(mat_df, scale.unit = FALSE)
@@ -150,13 +150,13 @@ plot.PCA(resPCA, choix="ind", habillage = 9, label = "none")
 # ----------------------------------------
 
 
-# ------- NMF -------
+# -------------- NMF --------------
 res_nmf <- nmf(mat_df, 4000)
 
 # ----------------------------------------
 
 
-# ------- WC-NMTF -------
+# -------------- WC-NMTF --------------
 res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_cos_xnorm.csv", header = TRUE)
 res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_cos.csv", header = TRUE)
 res_wc_nmtf <- read.csv("result_wc_nmtf/wc-nmtf_Z_l1_cos_2.csv", header = TRUE)
@@ -222,7 +222,7 @@ axis(1, at=1:length(lambdas), labels=lambdas)
 # ----------------------------------------
 
 
-# ------- LDA -------
+# -------------- LDA --------------
 res_lda <- read.csv("latent_dirichlet_allocation_res.csv", header = TRUE)
 # print results
 res_lda <- t( normalize( t(res_lda) ) )
@@ -234,7 +234,21 @@ plot(labelK)
 plot(label_res)
 # ----------------------------------------
 
-# ---------- Autoencoder results ----------
+
+# -------------- Hierarchical Clustering --------------
+dc <- dist(mat_df, method ="euclidean", diag=FALSE, upper=FALSE)
+res_hclust <- hclust(dc)
+
+
+label_res <- apply(res_lda, MARGIN = 1, FUN=which.max)
+
+layout(matrix(1:2))
+plot(labelK)
+plot(label_res)
+# ----------------------------------------
+
+
+# ----------------- Autoencoder results -----------------
 k0 <- read.csv("result_autoencoder/autoencoder_0_code.csv", row.names = 1)
 k0_ind <- read.csv("result_autoencoder/autoencoder_0_ind.csv", row.names = 1)
 k1 <- read.csv("result_autoencoder/autoencoder_1_code.csv", row.names = 1)
