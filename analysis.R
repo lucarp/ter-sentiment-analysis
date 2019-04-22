@@ -8,7 +8,7 @@ library(NMF)
 
 normalize <- function(x) {x / sqrt(rowSums(x^2))}
 normalizeByCol <- function(df) { t( normalize( t(df) ) )}
-sent_process <- function(x){ (x[1] - x[2]) * 10 + x[3] }
+sent_process <- function(x){ x[1] - x[2] + 1 }
 
 # -------------- Dataset loading --------------
 #X <- readMat("mat_files/output_30.csv_tf-idf-l2.mat")
@@ -16,7 +16,7 @@ sent_process <- function(x){ (x[1] - x[2]) * 10 + x[3] }
 #X <- readMat("mat_files/output_not_original_30.csv_tf-idf.mat")
 #X <- readMat("mat_files/output_not_original_30.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_50.csv_tf-idf-l2.mat")
-X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
+#X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_5.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_no_clean.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_100.csv_tf-idf-l2.mat")
@@ -25,7 +25,7 @@ X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
 
 #X <- readMat("mat_files/output_not_original_most_1000.csv_tf-idf-l2.mat")
 
-#X <- read.csv("doc2vec_matrix.csv", header = FALSE)
+df <- read.csv("doc2vec_matrix.csv", header = FALSE)
                  
 df <- X$X
 dim(df)
@@ -71,14 +71,16 @@ for(i in 2:length(label$V1)) {
 #3237
 
 label <- matrix(label[1:1027,])
-df <- df[1:1027,]
+mat_df <- mat_df[1:1027,]
 label <- matrix(label[1028:2334,])
-df <- df[1028:2334,]
+mat_df <- mat_df[1028:2334,]
 label <- matrix(label[2335:3236,])
-df <- df[2335:3236,]
-#label <- matrix(label[3237:length(label),])
-#df <- df[3237:length(label),]
+mat_df <- mat_df[2335:3236,]
+label <- matrix(label[3237:dim(label)[1],])
+mat_df <- mat_df[3237:dim(mat_df)[1],]
 # ----------------------------------------
+
+labelK <- apply(label, MARGIN = 1, FUN=function(x) max(1, ceiling(x*k))) # true label (1 to k)
 
 
 # -------------- K-means --------------
@@ -108,7 +110,7 @@ plot(rng, avg.rsquared, type="b", main="R squared by Various K",
      xlab="Value of K")
 
 # - K means clustering
-res <- kmeans(df, centers = k)
+res <- kmeans(mat_df, centers = k)
 length(res$cluster)
 length(labelK)
 
@@ -136,10 +138,12 @@ NMI(res2$cluster, labelK)
 ARI(res2$cluster, labelK)
 # ----------------------------------------
 
+svg(filename="kmeans_skmeans.svg")
 layout(matrix(1:3))
-plot(labelK, xlab = "Documents", ylab = "Cluster", main = "Real clusters")
-plot(res$cluster, xlab = "Documents", ylab = "Cluster", main = "K-Means clusters")
-plot(res2$cluster, xlab = "Documents", ylab = "Cluster", main = "Spherical K-Means clusters")
+plot(labelK, xlab = "Documents ID", ylab = "Rating", main = "Real clusters")
+plot(res$cluster, xlab = "Documents ID", ylab = "Cluster", main = "K-Means clusters")
+plot(res2$cluster, xlab = "Documents ID", ylab = "Cluster", main = "Spherical K-Means clusters")
+dev.off()
 
 # -------------- PCA --------------
 
@@ -177,6 +181,7 @@ res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l0.01.csv", header 
 res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l0.001.csv", header = TRUE)
 res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l0.0001.csv", header = TRUE)
 res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l1e-05.csv", header = TRUE)
+res_wc_nmtf <- read.csv("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l0.0.csv", header = TRUE)
 
 # tra files
 
@@ -224,6 +229,7 @@ axis(1, at=1:length(lambdas), labels=lambdas)
 
 # -------------- LDA --------------
 res_lda <- read.csv("latent_dirichlet_allocation_res.csv", header = TRUE)
+res_lda <- read.csv("latent_dirichlet_allocation_res_1000.csv", header = TRUE)
 # print results
 res_lda <- t( normalize( t(res_lda) ) )
 

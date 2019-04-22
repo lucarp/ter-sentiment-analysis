@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import scipy
 import re
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import normalize
 from nltk import word_tokenize

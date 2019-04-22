@@ -56,8 +56,8 @@ def cleanseData_most_common(df, threshold, vocab_file_out):
 
 def cleanAndSaveData(fileNameIn, fileNameOut, threshold, vocab_file_out):
     df = pd.read_csv(fileNameIn, header=0, index_col=0)
-    #df,vocab = cleanseData_below_threshold(df, threshold, vocab_file_out)
-    df,vocab = cleanseData_most_common(df, threshold, vocab_file_out)
+    df,vocab = cleanseData_below_threshold(df, threshold, vocab_file_out)
+    #df,vocab = cleanseData_most_common(df, threshold, vocab_file_out)
     df.to_csv(fileNameOut)
 
 def importDataset(path_to_dataset, clean_threshold):
@@ -75,7 +75,7 @@ def importDataset(path_to_dataset, clean_threshold):
         ratings = pd.read_csv(path_to_scaledata + '/' + author + '/rating.' + author, header=None)
         reviews = []
         for reviewId in ids[0]:
-            #print('Extracting review ' + str(reviewId) + ' by ' + author)
+            print('Extracting review ' + str(reviewId) + ' by ' + author)
             review_file = open(path_to_reviews  + '/' + author + '/txt.parag/' + str(reviewId) + '.txt', encoding='latin-1')
             reviews.append(preprocess(word_tokenize(review_file.read())))
             review_file.close()
@@ -109,6 +109,7 @@ def importPreProcessedDataset(path_to_dataset, clean_threshold):
             print('Extracting review ' + str(ids[0][i]) + ' by ' + author)
             i += 1
             reviews.append(preprocess(word_tokenize(review)))
+            #reviews.append(word_tokenize(review))
         frames.append(pd.DataFrame(data={'ID': ids[0], 'Author': author, 'Rating': ratings[0], 'Review': reviews}))
     df = pd.concat(frames)
     df.to_csv('output_not_original_without_clean.csv')
