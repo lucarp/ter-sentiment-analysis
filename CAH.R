@@ -2,9 +2,6 @@ setwd("/media/matthieu/Data/Matthieu/##Etude/#M1/S2/TER/ter-sentiment-analysis")
 
 library(aricode)
 library(R.matlab)
-library(skmeans)
-library("FactoMineR")
-library(NMF)
 
 normalize <- function(x) {x / sqrt(rowSums(x^2))}
 normalizeByCol <- function(df) { t( normalize( t(df) ) )}

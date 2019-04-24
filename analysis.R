@@ -9,6 +9,7 @@ library(NMF)
 normalize <- function(x) {x / sqrt(rowSums(x^2))}
 normalizeByCol <- function(df) { t( normalize( t(df) ) )}
 sent_process <- function(x){ x[1] - x[2] + 1 }
+sent_process2 <- function(x){ if(x[1] > x[2]) {1}else{0}  }
 
 # -------------- Dataset loading --------------
 #X <- readMat("mat_files/output_30.csv_tf-idf-l2.mat")
@@ -16,7 +17,7 @@ sent_process <- function(x){ x[1] - x[2] + 1 }
 #X <- readMat("mat_files/output_not_original_30.csv_tf-idf.mat")
 #X <- readMat("mat_files/output_not_original_30.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_50.csv_tf-idf-l2.mat")
-#X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
+X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_5.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_no_clean.csv_tf-idf-l2.mat")
 #X <- readMat("mat_files/output_not_original_100.csv_tf-idf-l2.mat")
@@ -25,7 +26,18 @@ sent_process <- function(x){ x[1] - x[2] + 1 }
 
 #X <- readMat("mat_files/output_not_original_most_1000.csv_tf-idf-l2.mat")
 
-df <- read.csv("doc2vec_matrix.csv", header = FALSE)
+#df <- read.csv("Word_Doc2Vec/doc2vec_matrix.csv", header = FALSE)
+#df <- read.csv("dataset/output_not_original_10.csv_doc2Vec.csv", header = TRUE, row.names = 1)
+#df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_e300.csv", header = TRUE, row.names = 1)
+#df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w10.csv", header = TRUE, row.names = 1)
+#df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w15.csv", header = TRUE, row.names = 1)
+#df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w15_2.csv", header = TRUE, row.names = 1)
+#df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w15_v100.csv", header = TRUE, row.names = 1)
+#df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w15_e50.csv", header = TRUE, row.names = 1)
+#df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w30.csv", header = TRUE, row.names = 1)
+#df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w30_v5.csv", header = TRUE, row.names = 1)
+#df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w50.csv", header = TRUE, row.names = 1)
+#df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w2.csv", header = TRUE, row.names = 1)
                  
 df <- X$X
 dim(df)
@@ -134,7 +146,7 @@ layout(matrix(1:2))
 plot(labelK, xlab = "Documents", ylab = "Cluster")
 plot(res2$cluster, xlab = "Documents", ylab = "Cluster")
 
-NMI(res2$cluster, labelK)
+aricode::NMI(res2$cluster, labelK)
 ARI(res2$cluster, labelK)
 # ----------------------------------------
 
@@ -155,7 +167,7 @@ plot.PCA(resPCA, choix="ind", habillage = 9, label = "none")
 
 
 # -------------- NMF --------------
-res_nmf <- nmf(mat_df, 4000)
+res_nmf <- nmf(mat_df, 5)
 
 # ----------------------------------------
 
@@ -201,14 +213,21 @@ plot(label_res)
 
 # compute nmi and ari for each file
 
+mode <- 0
+
 lambdas <- c("10000.0", "1000.0", "100.0", "10.0", "1.0", "0.1", "0.01", "0.001", "0.0001", "1e-05", "0.0")
+lambdas_name <- c("1e04", "1000", "100", "10", "1", "0.1", "0.01", "0.001", "1e-04", "1e-05", "0")
 lambdas <- rev(lambdas)
+lambdas_name <- rev(lambdas_name)
 
 cos_nmi <- c()
 cos_ari <- c()
 for(lambda in lambdas){
-  #file <- paste("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l", lambda, ".csv", sep = "")
-  file <- paste("result_wc_nmtf/lambda/p_tra/wc-nmtf_Z_l", lambda, "_p_tra.csv", sep = "")
+  if(mode == 0){
+    file <- paste("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l", lambda, ".csv", sep = "") 
+  } else {
+    file <- paste("result_wc_nmtf/lambda/p_tra/wc-nmtf_Z_l", lambda, "_p_tra.csv", sep = "") 
+  }
   res_wc_nmtf <- read.csv(file, header = TRUE)
   res_wc_nmtf <- t( normalize( t(res_wc_nmtf) ) )
   label_res <- apply(res_wc_nmtf, MARGIN = 1, FUN=which.max)
@@ -219,8 +238,20 @@ for(lambda in lambdas){
   cos_ari <- c(cos_ari, t_ari)
 }
 
-plot(cos_nmi, type = "b", ylab = "NMI", xlab = "Lambda", xaxt = "n")
-axis(1, at=1:length(lambdas), labels=lambdas)
+min <- min(min(cos_nmi), min(cos_ari))
+max <- max(max(cos_nmi), max(cos_ari))
+
+if(mode == 0){
+  svg(filename="nmi_ari_wcnmtf_cos.svg") 
+} else {
+  svg(filename="nmi_ari_wcnmtf_tra.svg") 
+}
+plot(cos_nmi, type = "b", ylab = "", xlab = "Lambda", xaxt = "n", ylim = c(min , max))
+lines(cos_ari, type= "b", pch = 2, lty = 4)
+legend("topright",legend=c("NMI", "ARI"), lty = c(1,4), pch = 1:2)
+axis(1, at=1:length(lambdas_name), labels=lambdas_name)
+dev.off()
+
 plot(cos_ari, type = "b", ylab = "ARI", xlab = "Lambda", xaxt = "n")
 axis(1, at=1:length(lambdas), labels=lambdas)
 
@@ -243,14 +274,16 @@ plot(label_res)
 
 # -------------- Hierarchical Clustering --------------
 dc <- dist(mat_df, method ="euclidean", diag=FALSE, upper=FALSE)
-res_hclust <- hclust(dc)
+res_hclust <- hclust(dc, method = "ward.D2")
 
-
-label_res <- apply(res_lda, MARGIN = 1, FUN=which.max)
+class=cutree(res_hclust,k)
+label_res <- class
 
 layout(matrix(1:2))
 plot(labelK)
 plot(label_res)
+aricode::NMI(label_res, labelK)
+ARI(label_res, labelK)
 # ----------------------------------------
 
 
@@ -269,6 +302,7 @@ k4_ind <- read.csv("result_autoencoder/autoencoder_4_ind.csv", row.names = 1)
 res_ae = rbind(k0, k1, k2, k3, k4)
 k_ind = rbind(k0_ind, k1_ind, k2_ind, k3_ind, k4_ind)
 res_ae = res_ae[order(k_ind),]
+
 label_res_ae <- apply(res_ae, MARGIN = 1, FUN=which.max)
 
 layout(matrix(1:2))
@@ -278,14 +312,30 @@ plot(label_res_ae)
 # ----------------------------------------
 
 
+# ----------------- Correspondance analysis -----------------
+
+table_df <- table(mat_df)
+res_CA <- CA(table_df)
+
+# ----------------------------------------
+
+
 # ----------------------------------------
 df <- read.csv("dataset/output_not_original_10_doc_sentiment.csv", row.names = 1)
+mat_df <- as.matrix(df)
+mat_df <- normalize(mat_df)
 
 temp <- apply(df, MARGIN = 1, FUN = sent_process)
+temp <- (temp-mean(temp)) + 0.5
+
+temp <- (temp - min(temp)) / (max(temp) - min(temp))
+
+temp <- as.matrix(temp)
+label_res <- apply(temp, MARGIN = 1, FUN=function(x) max(1, ceiling(x*k))) # true label (1 to k)
 
 layout(matrix(1:2))
 plot(labelK)
-plot(temp)
+plot(label_res)
 # ----------------------------------------
 
 #library(cluster)
