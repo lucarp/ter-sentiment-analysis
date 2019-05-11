@@ -1,4 +1,5 @@
-setwd("/media/matthieu/Data/Matthieu/##Etude/#M1/S2/TER/ter-sentiment-analysis")
+#setwd("/media/matthieu/Data/Matthieu/##Etude/#M1/S2/TER/ter-sentiment-analysis")
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 library(aricode)
 library(R.matlab)
@@ -8,8 +9,14 @@ library(NMF)
 
 normalize <- function(x) {x / sqrt(rowSums(x^2))}
 normalizeByCol <- function(df) { t( normalize( t(df) ) )}
-sent_process <- function(x){ x[1] - x[2] + 1 }
-sent_process2 <- function(x){ if(x[1] > x[2]) {1}else{0}  }
+sent_process <- function(x){ x[1] - x[2] + 1e-12 }
+sent_process2 <- function(x){ if(x[1] > x[2]) {
+                                1}
+                              else{ if(x[1] < x[2]){
+                                -1
+                              }else {0}
+                              }  
+  }
 
 # -------------- Dataset loading --------------
 #X <- readMat("mat_files/output_30.csv_tf-idf-l2.mat")
@@ -26,7 +33,10 @@ X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
 
 #X <- readMat("mat_files/output_not_original_most_1000.csv_tf-idf-l2.mat")
 
+df <- X$X
+
 #df <- read.csv("Word_Doc2Vec/doc2vec_matrix.csv", header = FALSE)
+
 #df <- read.csv("dataset/output_not_original_10.csv_doc2Vec.csv", header = TRUE, row.names = 1)
 #df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_e300.csv", header = TRUE, row.names = 1)
 #df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w10.csv", header = TRUE, row.names = 1)
@@ -36,10 +46,9 @@ X <- readMat("mat_files/output_not_original_10.csv_tf-idf-l2.mat")
 #df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w15_e50.csv", header = TRUE, row.names = 1)
 #df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w30.csv", header = TRUE, row.names = 1)
 #df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w30_v5.csv", header = TRUE, row.names = 1)
-#df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w50.csv", header = TRUE, row.names = 1)
+#df <- read.csv("dataset/doc2vec/output_not_original_10.csv_doc2Vec_w50.csv", header = TRUE, row.names = 1)
 #df <- read.csv("dataset/output_not_original_10.csv_doc2Vec_w2.csv", header = TRUE, row.names = 1)
-                 
-df <- X$X
+
 dim(df)
 mat_df <- as.matrix(df)
 mat_df <- normalize(mat_df)
@@ -57,7 +66,7 @@ S <- as.matrix(head(S, -1))
 S <- normalize(S)
 dim(S)
 
-M <- apply(S, MARGIN = 1, FUN = sent_process)
+M <- apply(S, MARGIN = 1, FUN = sent_process2)
 M <- diag(M)
 
 M <- S %*% t(S)
@@ -132,7 +141,6 @@ plot(labelK, xlab = "Documents", ylab = "Cluster")
 plot(res$cluster, xlab = "Documents", ylab = "Cluster")
 
 # - Compute NMI and ARI
-# TODO - Do correclty the NMI and ARI (match cluster value with label value)
 NMI(res$cluster, labelK)
 ARI(res$cluster, labelK)
 # ----------------------------------------
@@ -215,19 +223,24 @@ plot(label_res)
 
 mode <- 0
 
-lambdas <- c("10000.0", "1000.0", "100.0", "10.0", "1.0", "0.1", "0.01", "0.001", "0.0001", "1e-05", "0.0")
-lambdas_name <- c("1e04", "1000", "100", "10", "1", "0.1", "0.01", "0.001", "1e-04", "1e-05", "0")
+#lambdas <- c("10000.0", "1000.0", "100.0", "10.0", "1.0", "0.1", "0.01", "0.001", "0.0001", "1e-05", "0.0")
+#lambdas_name <- c("1e04", "1000", "100", "10", "1", "0.1", "0.01", "0.001", "1e-04", "1e-05", "0")
+lambdas <- c("10000.0", "1000.0", "100.0", "10.0", "1.0", "0.1", "0.01", "0.001", "0.0001", "1e-05")
+lambdas_name <- c("1e04", "1000", "100", "10", "1", "0.1", "0.01", "0.001", "1e-04", "1e-05")
 lambdas <- rev(lambdas)
 lambdas_name <- rev(lambdas_name)
 
 cos_nmi <- c()
 cos_ari <- c()
 for(lambda in lambdas){
-  if(mode == 0){
-    file <- paste("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l", lambda, ".csv", sep = "") 
-  } else {
-    file <- paste("result_wc_nmtf/lambda/p_tra/wc-nmtf_Z_l", lambda, "_p_tra.csv", sep = "") 
-  }
+  #if(mode == 0){
+    #file <- paste("result_wc_nmtf/lambda/cos/wc-nmtf_Z_l", lambda, ".csv", sep = "")
+  #} else {
+    #file <- paste("result_wc_nmtf/lambda/p_tra/wc-nmtf_Z_l", lambda, "_p_tra.csv", sep = "") 
+  #}
+  
+  file <- paste("result_temp/cos2/wc-nmtf_Z_l", lambda, ".csv", sep = "")
+  
   res_wc_nmtf <- read.csv(file, header = TRUE)
   res_wc_nmtf <- t( normalize( t(res_wc_nmtf) ) )
   label_res <- apply(res_wc_nmtf, MARGIN = 1, FUN=which.max)
@@ -314,8 +327,9 @@ plot(label_res_ae)
 
 # ----------------- Correspondance analysis -----------------
 
-table_df <- table(mat_df)
-res_CA <- CA(table_df)
+dim(mat_df[1:100,])
+
+res_CA <- CA(mat_df[1:100,])
 
 # ----------------------------------------
 
@@ -324,20 +338,34 @@ res_CA <- CA(table_df)
 df <- read.csv("dataset/output_not_original_10_doc_sentiment.csv", row.names = 1)
 mat_df <- as.matrix(df)
 mat_df <- normalize(mat_df)
+mat_df <- normalizeByCol(mat_df)
 
-temp <- apply(df, MARGIN = 1, FUN = sent_process)
-temp <- (temp-mean(temp)) + 0.5
-
+temp <- apply(mat_df, MARGIN = 1, FUN = sent_process)
+temp <- (temp-mean(temp)) / sd(temp)
 temp <- (temp - min(temp)) / (max(temp) - min(temp))
 
 temp <- as.matrix(temp)
+k <- 10
 label_res <- apply(temp, MARGIN = 1, FUN=function(x) max(1, ceiling(x*k))) # true label (1 to k)
 
 layout(matrix(1:2))
 plot(labelK)
 plot(label_res)
+
+NMI(label_res, labelK)
+ARI(label_res, labelK)
 # ----------------------------------------
 
 #library(cluster)
 #library(factoextra)
 #fviz_cluster(res, data = df)
+
+
+plot(labelK, xlab = "Document ID", ylab = "Rating", width = 1000, height = 500)
+abline(v = 1027)
+abline(v = 2334)
+abline(v = 3236)
+text(1027/2, 5, "Author 1")
+text((2334-1027)/2 + 1027, 5, "Author 2")
+text((3236-2334)/2 + 2334, 5, "Author 3")
+text((5006-3236)/2 + 3236, 5, "Author 4")

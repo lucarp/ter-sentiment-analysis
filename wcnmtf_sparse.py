@@ -4,7 +4,7 @@ from scipy import io
 import scipy
 import scipy.sparse
 import pandas as pd
-#from preprocessing_tools import term_sentiment_matrix_to_context_matrix, sppmi_context_matrix
+from preprocessing_tools import term_sentiment_matrix_to_context_matrix, sppmi_context_matrix
 from sklearn.preprocessing import normalize
 
 csr_dot = scipy.sparse.csr_matrix.dot
@@ -90,18 +90,19 @@ if __name__ == '__main__':
 	
 	print("Usage: {} X_mat_file M_mat_file g m lambda iter_lamba_x10".format(sys.argv[0]))
 	
-	X = io.loadmat(sys.argv[1])
+	X = io.loadmat(sys.argv[1])['X']
 	
 	#X = scipy.sparse.csr_matrix.todense(X['X'])
 	#X = normalize(X)
 	#M = term_sentiment_matrix_to_context_matrix(sys.argv[2], preprocess = True)
 	#M = term_sentiment_matrix_to_context_matrix(sys.argv[2])
-	#M = term_sentiment_matrix_to_context_matrix(sys.argv[2], method='cos')
+	M = term_sentiment_matrix_to_context_matrix(sys.argv[2], method='cos')
+	M = scipy.sparse.csr_matrix(M)
 	#M = pd.read_csv(sys.argv[2], index_col = 0)
 
 	#M = sppmi_context_matrix(M, N = 1)
 	
-	M = io.loadmat(sys.argv[2])
+	#M = io.loadmat(sys.argv[2])
 	
 	#M = scipy.sparse.csr_matrix.todense(M['X'])
 	#M = normalize(X)	

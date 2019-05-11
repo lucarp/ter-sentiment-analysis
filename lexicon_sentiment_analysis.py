@@ -42,4 +42,5 @@ if __name__ == "__main__":
 	text_column = 4
 	doc_sent = texts_to_sentiment(sys.argv[1], sys.argv[2], text_column)
 	print(doc_sent)
-	pd.DataFrame(doc_sent).to_csv(sys.argv[1]+"doc_sentiment.csv")
+	#pd.DataFrame(doc_sent).to_csv(sys.argv[1]+"doc_sentiment.csv")
+	pd.DataFrame(doc_sent).to_csv("doc_sentiment.csv")
