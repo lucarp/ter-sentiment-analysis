@@ -137,7 +137,7 @@ def text_to_co_occurence_matrix(texts_file):
 	co_occurence_matrix = np.dot(texts_df.T, texts_df)
 	
 	print(co_occurence_matrix)
-	print(co_occurence_matrix.shape)	
+	print(co_occurence_matrix.shape)
 		
 	return co_occurence_matrix
 	
