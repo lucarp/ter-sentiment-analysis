@@ -2,12 +2,14 @@ import numpy as np
 import sys
 from scipy import io
 import scipy
+import scipy.sparse
 import pandas as pd
-from preprocessing_tools import term_sentiment_matrix_to_context_matrix
+from preprocessing_tools import term_sentiment_matrix_to_context_matrix, sppmi_context_matrix
+from sklearn.preprocessing import normalize
 
 def compute_loss(X, M, Z, S, W, Q, l_reg):
-	ZSW_T = np.dot(np.dot(Z, S), np.transpose(W))
-	WQ_T = np.dot(W, np.transpose(Q))
+	ZSW_T = np.dot(np.dot(Z, S), W.T)
+	WQ_T = np.dot(W, Q.T)
 	
 	return 1/2 * np.linalg.norm(X - ZSW_T) ** 2 + l_reg/2 * np.linalg.norm(M - WQ_T) ** 2
 
@@ -16,19 +18,28 @@ def wc_nmtf(X, M, g, m, l_reg = 1):
 
 	n = X.shape[0]
 	d = X.shape[1]
-	
+
 	Z = np.random.rand(n, g)
 	S = np.random.rand(g, m)
 	W = np.random.rand(d, m)
 	Q = np.random.rand(d, m)
 	
+	# To sparse
+	"""Z = scipy.sparse.csr_matrix(Z)
+	S = scipy.sparse.csr_matrix(S)
+	W = scipy.sparse.csr_matrix(W)
+	Q = scipy.sparse.csr_matrix(Q)
+	X = scipy.sparse.csr_matrix(X)
+	M = scipy.sparse.csr_matrix(M)"""
+	
 	i = 0
-	epoch = 500
+	epoch = 300
 	print_loss_frequency = epoch / 100
 	stop_criterion = False
 	while not stop_criterion:
 		if i % print_loss_frequency == 0:
 			loss = compute_loss(X, M, Z, S, W, Q, l_reg)
+			
 			print(i,"___",loss)
 	
 		# Compute Z
@@ -54,17 +65,33 @@ def wc_nmtf(X, M, g, m, l_reg = 1):
 		i += 1
 		stop_criterion = i > epoch
 	
-	return {"Z": Z, "S": S, "W": W, "Q": Q}
+	# To dense
+	"""Z = scipy.sparse.csr_matrix.todense(Z)
+	S = scipy.sparse.csr_matrix.todense(S)
+	W = scipy.sparse.csr_matrix.todense(W)
+	Q = scipy.sparse.csr_matrix.todense(Q)"""	
+	
+	loss = compute_loss(X, M, Z, S, W, Q, l_reg)	
+	
+	return {"Z": Z, "S": S, "W": W, "Q": Q, "loss": loss}
 	
 if __name__ == '__main__':
-	"""n = 5000
-	d = 10000
+	"""n = 50
+	d = 100
 	X = np.random.rand(n, d)
 	M = np.random.rand(d, d)"""
 	
+	print("Usage: {} X_mat_file M_csv_file g m lambda iter_lamba_x10".format(sys.argv[0]))
+	
 	mat = io.loadmat(sys.argv[1])
 	X = scipy.sparse.csr_matrix.todense(mat['X'])
-	M = term_sentiment_matrix_to_context_matrix(sys.argv[2])
+	X = normalize(X)
+	#M = term_sentiment_matrix_to_context_matrix(sys.argv[2], preprocess = True)
+	#M = term_sentiment_matrix_to_context_matrix(sys.argv[2])
+	M = term_sentiment_matrix_to_context_matrix(sys.argv[2], method='cos')
+	#M = pd.read_csv(sys.argv[2], index_col = 0)
+
+	M = sppmi_context_matrix(M, N = 1)
 
 	g = int(sys.argv[3])
 	m = int(sys.argv[4])
@@ -72,7 +99,17 @@ if __name__ == '__main__':
 
 	print(X.shape)
 
-	res = wc_nmtf(X, M, g, m, l_reg = l_reg)
-	
-	Z = res["Z"]
-	pd.DataFrame(Z).to_csv('wc-nmtf_Z.csv', index=False)
+	num_iter = 10
+	for _ in range(int(sys.argv[6])):
+		best_loss = -1
+		for i in range(num_iter):
+			print("iter",i)
+			res = wc_nmtf(X, M, g, m, l_reg = l_reg)
+			if best_loss == -1 or best_loss > res["loss"]:
+				best_loss = res["loss"]
+				bestZ = res["Z"]
+		pd.DataFrame(bestZ).to_csv("wc-nmtf_Z_l"+str(l_reg)+".csv", index=False)
+		my_file = open("wc-nmtf_Z_loss.csv", "a")
+		my_file.write(str(best_loss)+"\n")
+		my_file.close()
+		l_reg *= 10

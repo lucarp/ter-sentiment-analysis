@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import scipy
 import re
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import normalize
 from nltk import word_tokenize
@@ -141,8 +140,8 @@ def text_to_co_occurence_matrix(texts_file):
 		
 	return co_occurence_matrix
 	
-def co_occurence_pmi(co_occurence_matrix, i, j, row_mat, col_mat, mat_sum, default = 0):
-	cij = co_occurence_matrix[i,j]
+def compute_pmi(matrix, i, j, row_mat, col_mat, mat_sum, default = 0):
+	cij = matrix[i,j]
 	cid = row_mat[i]
 	cdj = col_mat[j]
 	cdd = mat_sum
@@ -175,19 +174,19 @@ def term_sentiment_matrix_to_context_matrix(term_sentiment_file, preprocess=Fals
 	
 	return context_matrix
 
-def sppmi_context_matrix(co_occurence_matrix, N = 2):
-	sppmi_matrix = np.zeros(co_occurence_matrix.shape)
-	shape = co_occurence_matrix.shape[0]
+def sppmi_context_matrix(matrix, N = 2):
+	sppmi_matrix = np.zeros(matrix.shape)
+	shape = matrix.shape[0]
 	
-	row_mat = co_occurence_matrix.sum(axis = 1)
+	row_mat = matrix.sum(axis = 1)
 	row_mat = np.reshape(row_mat, [shape, 1])
-	col_mat = co_occurence_matrix.sum(axis = 0)
+	col_mat = matrix.sum(axis = 0)
 	col_mat = np.reshape(col_mat, [shape, 1])
-	mat_sum = co_occurence_matrix.sum()		
+	mat_sum = matrix.sum()		
 
-	cx = scipy.sparse.coo_matrix(co_occurence_matrix)
+	cx = scipy.sparse.coo_matrix(matrix)
 	for i,j,v in zip(cx.row, cx.col, cx.data):
-		pmi = co_occurence_pmi(co_occurence_matrix, i, j, row_mat, col_mat, mat_sum)
+		pmi = compute_pmi(matrix, i, j, row_mat, col_mat, mat_sum)
 		sppmi_matrix[i][j] = max(pmi - log(N), 0)
 			
 	return sppmi_matrix
@@ -206,9 +205,9 @@ if __name__ == '__main__':
 	print("save tf-idf...")
 	df, X = file_to_tfidf(sys.argv[1])
 	scipy.io.savemat(sys.argv[1]+"_tf-idf.mat", {'X' : X})
-	print("save tf-idf with l2...")
+	print("save tf-idf with l2...")"""
 	df, X = file_to_tfidf_l2(sys.argv[1])
-	scipy.io.savemat(sys.argv[1]+"_tf-idf-l2.mat", {'X' : X})"""
+	scipy.io.savemat(sys.argv[1]+"_tf-idf-l2.mat", {'X' : X})
 
 	# output to vocab file
 	"""df, X = file_to_tfidf_l2(sys.argv[1])
@@ -223,7 +222,7 @@ if __name__ == '__main__':
 	#context_matrix_cos = term_sentiment_matrix_to_context_matrix(sys.argv[1], method='cos')
 	
 	# text and vocab to co-occurence matrix
-	co_occurence_matrix = text_to_co_occurence_matrix(sys.argv[1])
+	"""co_occurence_matrix = text_to_co_occurence_matrix(sys.argv[1])
 	context_matrix = sppmi_context_matrix(co_occurence_matrix)
-	pd.DataFrame(context_matrix).to_csv('context_matrix.csv')
-	
+	sparse_context_matrix = scipy.sparse.csr_matrix(context_matrix)
+	scipy.io.savemat(sys.argv[1][:-4]+"_context_matrix.mat", {'X' : sparse_context_matrix})"""
