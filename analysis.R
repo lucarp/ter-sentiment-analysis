@@ -6,6 +6,7 @@ library(R.matlab)
 library(skmeans)
 library("FactoMineR")
 library(NMF)
+library(caret)
 
 normalize <- function(x) {x / sqrt(rowSums(x^2))}
 normalizeByCol <- function(df) { t( normalize( t(df) ) )}
@@ -369,3 +370,43 @@ text(1027/2, 5, "Author 1")
 text((2334-1027)/2 + 1027, 5, "Author 2")
 text((3236-2334)/2 + 2334, 5, "Author 3")
 text((5006-3236)/2 + 3236, 5, "Author 4")
+
+
+
+# ----------------------------------------
+a_nmi <- 0
+a_ari <- 0
+conf_mat <- 0
+f1 <- 0
+for(i in 0:4){
+  print("-------")
+  print(i)
+  print("-------")
+  file <- paste("result_linearDA/lda_res_", i, ".csv", sep = "")
+  res <- read.csv(file, row.names = 1)
+  res <- unlist(res, use.names = FALSE)
+  
+  file <- paste("result_linearDA/lda_res_", i, "_ind.csv", sep = "")
+  ind <- read.csv(file, row.names = 1)  
+  ind <- ind + 1
+  ind <- unlist(ind, use.names = FALSE)
+  
+  lab <- labelK[ind]
+  
+  nmi <- NMI(res, lab)
+  ari <- ARI(res, lab)
+  print(nmi)
+  print(ari)
+  a_nmi <- a_nmi + nmi
+  a_ari <- a_ari + ari
+  
+  conf <- confusionMatrix(factor(res), factor(lab))
+  conf_mat <- conf_mat + conf$table
+  f1 <- f1 + conf$byClass[,7]
+}
+print("-------")
+print("mean")
+print("-------")
+print(a_nmi/5)
+print(a_ari/5)
+
