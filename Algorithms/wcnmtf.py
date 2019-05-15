@@ -91,13 +91,17 @@ if __name__ == '__main__':
 	M = term_sentiment_matrix_to_context_matrix(sys.argv[2], method='cos')
 	#M = pd.read_csv(sys.argv[2], index_col = 0)
 
-	M = sppmi_context_matrix(M, N = 1)
+	#M = sppmi_context_matrix(M, N = 1)
+	
+	X = X[1027:2334,]
 
 	g = int(sys.argv[3])
 	m = int(sys.argv[4])
 	l_reg = float(sys.argv[5])
 
 	print(X.shape)
+	
+	input()
 
 	num_iter = 10
 	for _ in range(int(sys.argv[6])):
@@ -108,6 +112,7 @@ if __name__ == '__main__':
 			if best_loss == -1 or best_loss > res["loss"]:
 				best_loss = res["loss"]
 				bestZ = res["Z"]
+			pd.DataFrame(bestZ).to_csv("wc-nmtf_Z_l"+str(l_reg)+".csv", index=False)
 		pd.DataFrame(bestZ).to_csv("wc-nmtf_Z_l"+str(l_reg)+".csv", index=False)
 		my_file = open("wc-nmtf_Z_loss.csv", "a")
 		my_file.write(str(best_loss)+"\n")

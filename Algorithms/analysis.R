@@ -64,7 +64,7 @@ label_name <- paste(mat_path, "dataset_LABEL.csv", sep = "")
 label <- read.csv(label_name, header = FALSE)
 #label
 
-k <- 2
+k <- 5
 labelK <- apply(label, MARGIN = 1, FUN=function(x) max(1, ceiling(x*k))) # true label (1 to k)
 
 
